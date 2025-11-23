@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.endpoints import auth, pages, users
+from app.api.endpoints import auth, pages, users, documents
 import logging
 
 # Configure logging
@@ -32,6 +32,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(pages.router)
 app.include_router(users.router)
+app.include_router(documents.router)
 
 # Health check endpoint
 @app.get("/health")
