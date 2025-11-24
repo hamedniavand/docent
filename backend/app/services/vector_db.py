@@ -1,5 +1,4 @@
 import chromadb
-from chromadb.config import Settings
 from typing import List, Dict, Optional
 import logging
 from app.core.config import settings
@@ -13,19 +12,20 @@ class VectorDatabase:
         if persist_directory is None:
             persist_directory = settings.CHROMA_PATH
         
-        # Initialize Chroma client
-        self.client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=persist_directory
-        ))
-        
-        # Get or create collection
-        self.collection = self.client.get_or_create_collection(
-            name="documents",
-            metadata={"description": "Document chunks with embeddings"}
-        )
-        
-        logger.info(f"Vector DB initialized at {persist_directory}")
+        try:
+            # Use simpler settings for Chroma
+            self.client = chromadb.PersistentClient(path=persist_directory)
+            
+            # Get or create collection
+            self.collection = self.client.get_or_create_collection(
+                name="documents",
+                metadata={"hnsw:space": "cosine"}
+            )
+            
+            logger.info(f"Vector DB initialized at {persist_directory}")
+        except Exception as e:
+            logger.error(f"Error initializing Vector DB: {e}")
+            raise
     
     def add_chunks(
         self,
@@ -34,9 +34,7 @@ class VectorDatabase:
         texts: List[str],
         metadatas: List[Dict]
     ) -> bool:
-        """
-        Add document chunks to vector database
-        """
+        """Add document chunks to vector database"""
         try:
             self.collection.add(
                 ids=chunk_ids,
@@ -56,17 +54,7 @@ class VectorDatabase:
         n_results: int = 5,
         where: Optional[Dict] = None
     ) -> Dict:
-        """
-        Search for similar chunks
-        
-        Args:
-            query_embedding: Query embedding vector
-            n_results: Number of results to return
-            where: Metadata filter (e.g., {"company_id": 1})
-        
-        Returns:
-            Dict with 'ids', 'documents', 'metadatas', 'distances'
-        """
+        """Search for similar chunks"""
         try:
             results = self.collection.query(
                 query_embeddings=[query_embedding],
@@ -79,11 +67,8 @@ class VectorDatabase:
             return {"ids": [[]], "documents": [[]], "metadatas": [[]], "distances": [[]]}
     
     def delete_by_document(self, document_id: int) -> bool:
-        """
-        Delete all chunks for a document
-        """
+        """Delete all chunks for a document"""
         try:
-            # Query all chunks for this document
             results = self.collection.get(
                 where={"document_id": document_id}
             )

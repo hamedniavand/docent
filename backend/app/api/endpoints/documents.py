@@ -335,7 +335,7 @@ def delete_document(
     db.commit()
     
     return {"message": "Document deleted successfully"}
-
+    
 @router.get("/stats/company")
 def get_document_stats(
     db: Session = Depends(get_db),
@@ -344,11 +344,22 @@ def get_document_stats(
     """
     Get document statistics for company
     """
+    # Handle SystemAdmin vs User
+    from app.models.models import SystemAdmin
+    if isinstance(current_user, SystemAdmin):
+        # System admin - could see all companies or return error
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="System admins must specify a company_id parameter"
+        )
+    
+    company_id = current_user.company_id
+    
     # Total documents
-    total = db.query(Document).filter(Document.company_id == current_user.company_id).count()
+    total = db.query(Document).filter(Document.company_id == company_id).count()
     
     # Calculate total size
-    documents = db.query(Document).filter(Document.company_id == current_user.company_id).all()
+    documents = db.query(Document).filter(Document.company_id == company_id).all()
     storage = get_file_storage(settings.STORAGE_PATH)
     
     total_size = 0
@@ -366,7 +377,7 @@ def get_document_stats(
     from datetime import timedelta
     seven_days_ago = datetime.utcnow() - timedelta(days=7)
     recent = db.query(Document).filter(
-        Document.company_id == current_user.company_id,
+        Document.company_id == company_id,
         Document.created_at >= seven_days_ago
     ).count()
     

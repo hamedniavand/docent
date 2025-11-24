@@ -11,10 +11,10 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U docent_user -d docent"]
+      test: ["CMD-SHELL", "pg_isready -U docent_user"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,10 +24,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: docent-backend
-    env_file:
-      - .env
+    environment:
+      - DATABASE_URL=postgresql://docent_user:${POSTGRES_PASSWORD}@postgres:5432/docent
+      - CHROMA_PATH=/data/chroma
+      - STORAGE_PATH=/data/storage
+      - LOG_PATH=/data/logs
     volumes:
-      - ./backend/app:/app/app
+      - ./backend:/app
       - ./data/chroma:/data/chroma
       - ./data/storage:/data/storage
       - ./data/logs:/data/logs

@@ -1,61 +1,46 @@
 import logging
 from typing import List, Optional
-import google.generativeai as genai
-from app.core.config import settings
+import random
 
 logger = logging.getLogger(__name__)
 
-# Configure Gemini
-genai.configure(api_key=settings.GEMINI_API_KEY)
-
 class EmbeddingService:
-    """Generate embeddings using Google Gemini"""
+    """Mock embedding service for testing (generates random vectors)"""
     
     def __init__(self):
-        self.model = "models/embedding-001"
+        self.embedding_dim = 768  # Standard embedding dimension
+        logger.info("Using MOCK embedding service (random vectors)")
     
     def generate_embedding(self, text: str) -> Optional[List[float]]:
         """
-        Generate embedding for a single text
-        Returns: List of floats (embedding vector) or None on error
+        Generate mock embedding (random vector)
         """
         try:
-            result = genai.embed_content(
-                model=self.model,
-                content=text,
-                task_type="retrieval_document"
-            )
-            return result['embedding']
+            # Generate random vector
+            embedding = [random.random() for _ in range(self.embedding_dim)]
+            logger.info(f"Generated mock embedding for text ({len(text)} chars)")
+            return embedding
         except Exception as e:
-            logger.error(f"Error generating embedding: {e}")
+            logger.error(f"Error generating mock embedding: {e}")
             return None
     
     def generate_embeddings_batch(self, texts: List[str]) -> List[Optional[List[float]]]:
         """
         Generate embeddings for multiple texts
-        Returns: List of embedding vectors (or None for failed ones)
         """
         embeddings = []
         for text in texts:
             embedding = self.generate_embedding(text)
             embeddings.append(embedding)
         
+        logger.info(f"Generated {len(embeddings)} mock embeddings")
         return embeddings
     
     def generate_query_embedding(self, query: str) -> Optional[List[float]]:
         """
         Generate embedding for search query
         """
-        try:
-            result = genai.embed_content(
-                model=self.model,
-                content=query,
-                task_type="retrieval_query"
-            )
-            return result['embedding']
-        except Exception as e:
-            logger.error(f"Error generating query embedding: {e}")
-            return None
+        return self.generate_embedding(query)
 
 # Singleton instance
 embedding_service = EmbeddingService()
