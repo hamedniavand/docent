@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
@@ -6,167 +7,47 @@ router = APIRouter(tags=["Pages"])
 @router.get("/", response_class=HTMLResponse)
 def root():
     """Landing page"""
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Docent - Knowledge Retention Platform</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-            }
-            .container {
-                text-align: center;
-                padding: 40px;
-                max-width: 800px;
-            }
-            h1 {
-                font-size: 64px;
-                margin-bottom: 20px;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            }
-            .tagline {
-                font-size: 24px;
-                margin-bottom: 40px;
-                opacity: 0.9;
-            }
-            .status {
-                background: rgba(255,255,255,0.2);
-                backdrop-filter: blur(10px);
-                border-radius: 16px;
-                padding: 30px;
-                margin-bottom: 30px;
-            }
-            .status-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 12px 0;
-                border-bottom: 1px solid rgba(255,255,255,0.1);
-            }
-            .status-item:last-child { border-bottom: none; }
-            .check { color: #4ade80; font-size: 20px; }
-            .btn {
-                display: inline-block;
-                padding: 16px 48px;
-                background: white;
-                color: #667eea;
-                text-decoration: none;
-                border-radius: 12px;
-                font-size: 18px;
-                font-weight: 600;
-                transition: all 0.3s;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            }
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            }
-            .version {
-                margin-top: 40px;
-                opacity: 0.7;
-                font-size: 14px;
-            }
-            .features {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin: 30px 0;
-            }
-            .feature {
-                background: rgba(255,255,255,0.1);
-                padding: 20px;
-                border-radius: 12px;
-            }
-            .feature h3 {
-                font-size: 18px;
-                margin-bottom: 10px;
-            }
-            .feature p {
-                font-size: 14px;
-                opacity: 0.8;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🎓 Docent</h1>
-            <p class="tagline">AI-Powered Knowledge Retention Platform</p>
-            
-            <div class="status">
-                <div class="status-item">
-                    <span>Infrastructure & SSL</span>
-                    <span class="check">✓</span>
-                </div>
-                <div class="status-item">
-                    <span>Database & Models</span>
-                    <span class="check">✓</span>
-                </div>
-                <div class="status-item">
-                    <span>Authentication System</span>
-                    <span class="check">✓</span>
-                </div>
-                <div class="status-item">
-                    <span>User Management</span>
-                    <span class="check">✓</span>
-                </div>
-                <div class="status-item">
-                    <span>Document Upload</span>
-                    <span class="check">✓</span>
-                </div>
-                <div class="status-item">
-                    <span>Document Processing</span>
-                    <span class="check">✓</span>
-                </div>
-                <div class="status-item">
-                    <span>AI Search</span>
-                    <span style="opacity: 0.5">⏳ Coming Soon</span>
-                </div>
-            </div>
-            
-            <div class="features">
-                <div class="feature">
-                    <h3>📄 Smart Documents</h3>
-                    <p>Upload and process company documents with AI</p>
-                </div>
-                <div class="feature">
-                    <h3>🔍 AI Search</h3>
-                    <p>Intelligent search across all documents</p>
-                </div>
-                <div class="feature">
-                    <h3>👥 Team Management</h3>
-                    <p>Role-based access control</p>
-                </div>
-                <div class="feature">
-                    <h3>📊 Analytics</h3>
-                    <p>Track knowledge usage</p>
-                </div>
-            </div>
-            
-            <a href="/auth/login-page" class="btn">Launch Dashboard →</a>
-            
-            <div class="version">
-                <p>Version 0.7.0 (MVP Development)</p>
-                <p>Day 7/30 Complete • 23% Progress</p>
-                <p><a href="/docs" style="color: white; opacity: 0.8;">API Documentation</a></p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-@router.get("/dashboard", response_class=HTMLResponse)
-def dashboard():
-    # ... rest of your existing code
+    html = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Docent - Knowledge Retention Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container { text-align: center; padding: 40px; max-width: 800px; }
+        h1 { font-size: 64px; margin-bottom: 20px; }
+        .btn {
+            display: inline-block;
+            padding: 16px 48px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Docent</h1>
+        <p>AI-Powered Knowledge Retention Platform</p>
+        <p style="margin: 30px 0;">Day 7/30 Complete • 23% Progress</p>
+        <a href="/auth/login-page" class="btn">Launch Dashboard →</a>
+    </div>
+</body>
+</html>"""
+    return html
 
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard():
