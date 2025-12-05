@@ -17,7 +17,7 @@ def search_documents(
     db: Session = Depends(get_db),
     current_user = Depends(require_active_user)
 ):
-    """Semantic search across company documents"""
+    """Semantic search with filters"""
     if isinstance(current_user, SystemAdmin):
         raise HTTPException(
             status_code=400,
@@ -33,7 +33,10 @@ def search_documents(
         company_id=company_id,
         user_id=user_id,
         db=db,
-        top_k=request.top_k
+        top_k=request.top_k,
+        file_type=request.file_type,
+        date_from=request.date_from,
+        date_to=request.date_to
     )
     
     if not result.get("success"):
@@ -44,8 +47,11 @@ def search_documents(
             document_id=r["document_id"],
             filename=r["filename"],
             chunk_text=r["chunk_text"],
+            snippet=r["snippet"],
             chunk_index=r["chunk_index"],
-            score=r["score"]
+            score=r["score"],
+            file_type=r["file_type"],
+            created_at=r["created_at"]
         )
         for r in result["results"]
     ]
@@ -54,7 +60,8 @@ def search_documents(
         query=result["query"],
         results=search_results,
         total_results=result["total_results"],
-        search_time_ms=result["search_time_ms"]
+        search_time_ms=result["search_time_ms"],
+        filters_applied=result["filters_applied"]
     )
 
 @router.get("/history")
@@ -84,4 +91,32 @@ def get_search_history(
             }
             for h in history
         ]
+    }
+
+@router.get("/filters")
+def get_available_filters(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_active_user)
+):
+    """Get available filter options for current company"""
+    from app.models.models import Document
+    from sqlalchemy import func
+    
+    if isinstance(current_user, SystemAdmin):
+        raise HTTPException(status_code=400, detail="Not available for system admins")
+    
+    company_id = current_user.company_id
+    
+    # Get unique file types
+    docs = db.query(Document).filter(Document.company_id == company_id).all()
+    
+    file_types = set()
+    for doc in docs:
+        if '.' in doc.filename:
+            ext = doc.filename.rsplit('.', 1)[1].lower()
+            file_types.add(ext)
+    
+    return {
+        "file_types": sorted(list(file_types)),
+        "total_documents": len(docs)
     }

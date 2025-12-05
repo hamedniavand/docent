@@ -1,7 +1,7 @@
 # 🎓 Docent - Knowledge Retention Platform
 
-![Progress](https://img.shields.io/badge/Progress-27%25-blue)
-![Day](https://img.shields.io/badge/Day-8%20of%2030-green)
+![Progress](https://img.shields.io/badge/Progress-33%25-blue)
+![Day](https://img.shields.io/badge/Day-10%20of%2030-green)
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 
 ## Overview
@@ -21,7 +21,7 @@ AI-powered multi-tenant SaaS for SME knowledge management, onboarding, and seman
 | Frontend | Vanilla JS (embedded) |
 | Deploy | Docker Compose + Nginx + SSL |
 
-## 📊 Development Progress (8/30 Days)
+## 📊 Development Progress (10/30 Days)
 
 ### ✅ Completed
 
@@ -33,40 +33,35 @@ AI-powered multi-tenant SaaS for SME knowledge management, onboarding, and seman
 | 5 | User Management | CRUD, roles, invites, email integration |
 | 6 | Document Upload | Single/multi upload, 50MB limit, drag & drop |
 | 7 | Document Processing | Parse, chunk, embed, vector storage |
-| **8** | **AI Search** | **Semantic search, Gemini embeddings, search history** |
+| 8 | AI Search | Semantic search, Gemini embeddings |
+| 9 | Search UI | Search page, highlighting, history |
+| **10** | **Search Filters** | **File type filters, smart snippets, date range** |
 
-### 🔜 Coming Up
+### �� Coming Up
 
 | Day | Phase | Planned Features |
 |-----|-------|------------------|
-| 9-11 | Search Enhancement | Filters, ranking, deduplication, UI |
+| 11 | Search Polish | Dashboard widget, UX improvements |
 | 12-14 | Onboarding | Paths, chat interface, progress tracking |
 | 15-17 | Case Studies | Templates, AI generation, export |
-| 18-20 | Integrations | Google Drive, Sheets sync |
-| 21-30 | Admin & Polish | Panels, testing, documentation |
+| 18-30 | Integrations & Polish | Google Drive, admin panels, testing |
 
-## �� Search API
+## 🔍 Search API
 ```bash
-# Semantic search across documents
+# Semantic search with filters
 POST /search/
 {
   "query": "remote work policy",
-  "top_k": 5
+  "top_k": 5,
+  "file_type": "pdf",        # Optional filter
+  "date_from": "2024-01-01"  # Optional filter
 }
 
-# Response
-{
-  "query": "remote work policy",
-  "results": [
-    {
-      "document_id": 12,
-      "filename": "knowledge_base.txt",
-      "chunk_text": "Remote work is available...",
-      "score": 0.67
-    }
-  ],
-  "search_time_ms": 435
-}
+# Get available filters
+GET /search/filters
+
+# Search history
+GET /search/history
 ```
 
 ## 🏗️ Architecture
@@ -80,46 +75,29 @@ User → Nginx (SSL:443) → FastAPI (:8000)
                   Gemini API (embeddings)
 ```
 
-## 🚀 Quick Start
-```bash
-git clone https://github.com/hamedniavand/docent.git
-cd docent
-cp .env.example .env
-# Edit .env with your settings
-docker-compose up -d
-```
+## 📁 Key Pages
 
-## 📁 Project Structure
-```
-docent/
-├── backend/
-│   ├── app/
-│   │   ├── api/endpoints/    # auth, users, documents, processing, search
-│   │   ├── services/         # embeddings, vector_db, search
-│   │   ├── models/           # SQLAlchemy (12 tables)
-│   │   └── utils/            # parsers, chunking, storage
-│   └── requirements.txt
-├── docs/
-├── docker-compose.yml
-└── .env
-```
+- `/auth/login-page` - Login
+- `/dashboard` - Main dashboard
+- `/search-page` - AI Search
+- `/documents-management` - Document management
+- `/users-management` - User management
 
-## 🔌 API Endpoints (22 Total)
+## 🔌 API Endpoints (24 Total)
 
 | Category | Endpoints |
 |----------|-----------|
-| Auth | POST /auth/login, GET /auth/me, POST /auth/logout |
-| Users | GET/POST/PUT/DELETE /users/, POST /users/invite |
-| Documents | POST /documents/upload, GET /documents/, DELETE /documents/{id} |
-| Processing | POST /processing/process/{id}, GET /processing/status/{id} |
-| **Search** | **POST /search/, GET /search/history** |
+| Auth | POST /auth/login, GET /auth/me |
+| Users | CRUD /users/, POST /users/invite |
+| Documents | POST /documents/upload, GET /documents/ |
+| Processing | POST /processing/process/{id} |
+| **Search** | **POST /search/, GET /search/filters, GET /search/history** |
 
 ## 🔐 Test Credentials
 ```
-System Admin: hamed.niavand@gmail.com / admin123
 Company Admin: admin@democorp.com / admin123
 ```
 
 ---
 
-**Last Updated**: December 2024 | **Day 8 of 30** | **27% Complete**
+**Last Updated**: December 2024 | **Day 10 of 30** | **33% Complete**
