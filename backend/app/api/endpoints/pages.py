@@ -154,8 +154,11 @@ def dashboard():
                 <p id="welcomeMessage">Loading your dashboard...</p>
             </div>
             
-            <div class="stats">
-                <div class="stat-card" onclick="window.location.href='/users-management'" style="cursor: pointer;">
+                <div class="stat-card" onclick="window.location.href='/search-page'" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h3 style="color: rgba(255,255,255,0.9);">AI Search</h3>
+                    <div class="value">🔍</div>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 10px;">Search documents →</p>
+                </div>
                     <h3>Team Members</h3>
                     <div class="value">1</div>
                     <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">Click to manage →</p>
@@ -1032,6 +1035,379 @@ def documents_management():
             
             // Initialize
             loadCurrentUser();
+        </script>
+    </body>
+    </html>
+    """
+@router.get("/search-page", response_class=HTMLResponse)
+def search_page():
+    """
+    AI Search page
+    """
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - AI Search</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+                min-height: 100vh;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 900px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .search-box {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 30px;
+            }
+            .search-input-container {
+                display: flex;
+                gap: 10px;
+            }
+            .search-input {
+                flex: 1;
+                padding: 15px 20px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+            }
+            .search-input:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+            .btn {
+                padding: 15px 30px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
+            .btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            }
+            .btn-secondary {
+                background: #e0e0e0;
+                color: #333;
+            }
+            .results-container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            .results-header {
+                padding: 20px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .results-header h2 { font-size: 18px; color: #2c3e50; }
+            .results-meta { color: #7f8c8d; font-size: 14px; }
+            .result-item {
+                padding: 20px;
+                border-bottom: 1px solid #eee;
+                transition: background 0.2s;
+            }
+            .result-item:hover {
+                background: #f8f9ff;
+            }
+            .result-item:last-child {
+                border-bottom: none;
+            }
+            .result-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .result-filename {
+                font-weight: 600;
+                color: #667eea;
+                font-size: 16px;
+            }
+            .result-score {
+                background: #e8f5e9;
+                color: #2e7d32;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            .result-score.high { background: #e8f5e9; color: #2e7d32; }
+            .result-score.medium { background: #fff3e0; color: #ef6c00; }
+            .result-score.low { background: #ffebee; color: #c62828; }
+            .result-text {
+                color: #555;
+                line-height: 1.6;
+                font-size: 14px;
+                max-height: 100px;
+                overflow: hidden;
+                position: relative;
+            }
+            .result-text.expanded {
+                max-height: none;
+            }
+            .result-meta {
+                margin-top: 10px;
+                font-size: 12px;
+                color: #999;
+            }
+            .expand-btn {
+                color: #667eea;
+                cursor: pointer;
+                font-size: 12px;
+                margin-top: 5px;
+                display: inline-block;
+            }
+            .no-results {
+                padding: 60px 20px;
+                text-align: center;
+                color: #7f8c8d;
+            }
+            .no-results h3 { margin-bottom: 10px; color: #2c3e50; }
+            .loading {
+                padding: 40px;
+                text-align: center;
+                color: #7f8c8d;
+            }
+            .search-history {
+                margin-top: 20px;
+            }
+            .history-item {
+                display: inline-block;
+                padding: 6px 12px;
+                background: #f0f0f0;
+                border-radius: 20px;
+                margin: 4px;
+                font-size: 13px;
+                color: #555;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .history-item:hover {
+                background: #e0e0e0;
+            }
+            .highlight {
+                background: #fff59d;
+                padding: 1px 3px;
+                border-radius: 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🔍 Docent - AI Search</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">
+                ← Back to Dashboard
+            </button>
+        </div>
+        
+        <div class="container">
+            <div class="search-box">
+                <div class="search-input-container">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="Ask anything about your documents..." 
+                           onkeypress="if(event.key==='Enter') performSearch()">
+                    <button class="btn btn-primary" onclick="performSearch()">
+                        Search
+                    </button>
+                </div>
+                
+                <div class="search-history" id="searchHistory">
+                    <!-- Recent searches will appear here -->
+                </div>
+            </div>
+            
+            <div class="results-container" id="resultsContainer" style="display: none;">
+                <div class="results-header">
+                    <h2>Search Results</h2>
+                    <span class="results-meta" id="resultsMeta"></span>
+                </div>
+                <div id="resultsBody">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/auth/login-page';
+            }
+            
+            // Load search history on page load
+            loadSearchHistory();
+            
+            async function performSearch() {
+                const query = document.getElementById('searchInput').value.trim();
+                if (!query) return;
+                
+                const resultsContainer = document.getElementById('resultsContainer');
+                const resultsBody = document.getElementById('resultsBody');
+                const resultsMeta = document.getElementById('resultsMeta');
+                
+                resultsContainer.style.display = 'block';
+                resultsBody.innerHTML = '<div class="loading">🔍 Searching...</div>';
+                
+                try {
+                    const response = await fetch('/search/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            query: query,
+                            top_k: 5
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Search failed');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Update meta
+                    resultsMeta.textContent = `${data.total_results} results in ${data.search_time_ms}ms`;
+                    
+                    // Deduplicate results by document_id + chunk_index
+                    const seen = new Set();
+                    const uniqueResults = data.results.filter(r => {
+                        const key = `${r.document_id}-${r.chunk_index}`;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+                    
+                    if (uniqueResults.length === 0) {
+                        resultsBody.innerHTML = `
+                            <div class="no-results">
+                                <h3>No results found</h3>
+                                <p>Try different keywords or upload more documents</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Render results
+                    resultsBody.innerHTML = uniqueResults.map((result, index) => {
+                        const scoreClass = result.score > 0.7 ? 'high' : (result.score > 0.4 ? 'medium' : 'low');
+                        const scorePercent = Math.round(result.score * 100);
+                        
+                        // Highlight query terms in text
+                        let displayText = result.chunk_text;
+                        const queryWords = query.toLowerCase().split(' ');
+                        queryWords.forEach(word => {
+                            if (word.length > 2) {
+                                const regex = new RegExp(`(${word})`, 'gi');
+                                displayText = displayText.replace(regex, '<span class="highlight">$1</span>');
+                            }
+                        });
+                        
+                        // Truncate for display
+                        const truncated = displayText.length > 300 ? displayText.substring(0, 300) + '...' : displayText;
+                        
+                        return `
+                            <div class="result-item">
+                                <div class="result-header">
+                                    <span class="result-filename">📄 ${result.filename}</span>
+                                    <span class="result-score ${scoreClass}">${scorePercent}% match</span>
+                                </div>
+                                <div class="result-text" id="text-${index}">
+                                    ${truncated}
+                                </div>
+                                ${displayText.length > 300 ? `
+                                    <span class="expand-btn" onclick="toggleExpand(${index}, \`${displayText.replace(/`/g, "'")}\`)">
+                                        Show more ▼
+                                    </span>
+                                ` : ''}
+                                <div class="result-meta">
+                                    Document ID: ${result.document_id} | Chunk: ${result.chunk_index}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Reload search history
+                    loadSearchHistory();
+                    
+                } catch (error) {
+                    resultsBody.innerHTML = `
+                        <div class="no-results">
+                            <h3>Search Error</h3>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            function toggleExpand(index, fullText) {
+                const textEl = document.getElementById(`text-${index}`);
+                if (textEl.classList.contains('expanded')) {
+                    textEl.classList.remove('expanded');
+                    textEl.innerHTML = fullText.substring(0, 300) + '...';
+                } else {
+                    textEl.classList.add('expanded');
+                    textEl.innerHTML = fullText;
+                }
+            }
+            
+            async function loadSearchHistory() {
+                try {
+                    const response = await fetch('/search/history?limit=5', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const historyContainer = document.getElementById('searchHistory');
+                        
+                        if (data.history && data.history.length > 0) {
+                            historyContainer.innerHTML = '<span style="color: #999; font-size: 13px;">Recent: </span>' +
+                                data.history.map(h => 
+                                    `<span class="history-item" onclick="searchFromHistory('${h.query}')">${h.query}</span>`
+                                ).join('');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to load search history');
+                }
+            }
+            
+            function searchFromHistory(query) {
+                document.getElementById('searchInput').value = query;
+                performSearch();
+            }
+            
+            // Focus search input on load
+            document.getElementById('searchInput').focus();
         </script>
     </body>
     </html>

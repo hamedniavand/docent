@@ -81,6 +81,16 @@ class SearchService:
                         "score": round(score, 4)
                     })
             
+            # Deduplicate results by document_id + chunk_index
+            seen = set()
+            unique_results = []
+            for r in results:
+                key = f"{r['document_id']}-{r['chunk_index']}"
+                if key not in seen:
+                    seen.add(key)
+                    unique_results.append(r)
+            
+            results = unique_results
             results.sort(key=lambda x: x['score'], reverse=True)
             search_time_ms = round((time.time() - start_time) * 1000, 2)
             
