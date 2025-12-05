@@ -52,7 +52,7 @@ def root():
 @router.get("/dashboard", response_class=HTMLResponse)
 def dashboard():
     """
-    Simple dashboard page (protected by frontend)
+    Dashboard with search widget and stats
     """
     return """
     <!DOCTYPE html>
@@ -87,39 +87,167 @@ def dashboard():
                 margin: 40px auto;
                 padding: 0 20px;
             }
-            .welcome-card {
-                background: white;
+            
+            /* Search Widget */
+            .search-widget {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 padding: 40px;
-                border-radius: 12px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-radius: 16px;
                 margin-bottom: 30px;
+                color: white;
             }
-            .welcome-card h2 {
-                color: #2c3e50;
-                margin-bottom: 10px;
+            .search-widget h2 {
+                margin-bottom: 20px;
+                font-size: 24px;
             }
+            .search-input-container {
+                display: flex;
+                gap: 10px;
+                max-width: 600px;
+            }
+            .search-input {
+                flex: 1;
+                padding: 15px 20px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+            }
+            .search-input:focus {
+                outline: none;
+            }
+            .search-btn {
+                padding: 15px 30px;
+                background: white;
+                color: #667eea;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+            .search-btn:hover {
+                transform: translateY(-2px);
+            }
+            .search-hint {
+                margin-top: 15px;
+                font-size: 14px;
+                opacity: 0.9;
+            }
+            
+            /* Stats Grid */
             .stats {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: 20px;
+                margin-bottom: 30px;
             }
             .stat-card {
                 background: white;
-                padding: 30px;
+                padding: 25px;
                 border-radius: 12px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .stat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             }
             .stat-card h3 {
                 color: #7f8c8d;
-                font-size: 14px;
-                margin-bottom: 10px;
+                font-size: 13px;
+                margin-bottom: 8px;
                 text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
             .stat-card .value {
                 color: #2c3e50;
                 font-size: 32px;
                 font-weight: bold;
             }
+            .stat-card .subtitle {
+                font-size: 12px;
+                color: #999;
+                margin-top: 8px;
+            }
+            .stat-card.highlight {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .stat-card.highlight h3,
+            .stat-card.highlight .value,
+            .stat-card.highlight .subtitle {
+                color: white;
+            }
+            .stat-card.highlight h3 {
+                opacity: 0.9;
+            }
+            
+            /* Quick Actions */
+            .quick-actions {
+                background: white;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 30px;
+            }
+            .quick-actions h3 {
+                margin-bottom: 15px;
+                color: #2c3e50;
+            }
+            .action-buttons {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .action-btn {
+                padding: 12px 20px;
+                border: 2px solid #e0e0e0;
+                background: white;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                color: #555;
+                transition: all 0.2s;
+                text-decoration: none;
+            }
+            .action-btn:hover {
+                border-color: #667eea;
+                color: #667eea;
+            }
+            
+            /* Recent Activity */
+            .recent-section {
+                background: white;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .recent-section h3 {
+                margin-bottom: 15px;
+                color: #2c3e50;
+            }
+            .recent-item {
+                padding: 12px 0;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .recent-item:last-child {
+                border-bottom: none;
+            }
+            .recent-item .query {
+                color: #333;
+                font-weight: 500;
+            }
+            .recent-item .meta {
+                color: #999;
+                font-size: 12px;
+            }
+            
             .btn {
                 padding: 10px 20px;
                 background: #e74c3c;
@@ -131,11 +259,6 @@ def dashboard():
             }
             .btn:hover {
                 background: #c0392b;
-            }
-            .loading {
-                text-align: center;
-                padding: 40px;
-                color: #7f8c8d;
             }
         </style>
     </head>
@@ -149,38 +272,63 @@ def dashboard():
         </div>
         
         <div class="container">
-            <div class="welcome-card">
-                <h2>Welcome to Docent!</h2>
-                <p id="welcomeMessage">Loading your dashboard...</p>
+            <!-- Search Widget -->
+            <div class="search-widget">
+                <h2>🔍 Ask anything about your documents</h2>
+                <div class="search-input-container">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="e.g., What is our remote work policy?" 
+                           onkeypress="if(event.key==='Enter') quickSearch()">
+                    <button class="search-btn" onclick="quickSearch()">Search</button>
+                </div>
+                <p class="search-hint">Try: "onboarding process", "project management", "benefits"</p>
             </div>
             
-                <div class="stat-card" onclick="window.location.href='/search-page'" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                    <h3 style="color: rgba(255,255,255,0.9);">AI Search</h3>
-                    <div class="value">🔍</div>
-                    <p style="font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 10px;">Search documents →</p>
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-card" onclick="window.location.href='/documents-management'">
+                    <h3>📄 Documents</h3>
+                    <div class="value" id="docCount">-</div>
+                    <div class="subtitle">Click to manage</div>
                 </div>
-                    <h3>Team Members</h3>
-                    <div class="value">1</div>
-                    <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">Click to manage →</p>
-                </div>
-                <div class="stat-card" onclick="window.location.href='/documents-management'" style="cursor: pointer;">
-                    <h3>Documents</h3>
-                    <div class="value" id="docCount">0</div>
-                    <p style="font-size: 12px; color: #7f8c8d; margin-top: 10px;">Click to view →</p>
+                <div class="stat-card" onclick="window.location.href='/users-management'">
+                    <h3>👥 Team Members</h3>
+                    <div class="value" id="userCount">-</div>
+                    <div class="subtitle">Click to manage</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Searches</h3>
-                    <div class="value">0</div>
+                    <h3>🔍 Searches</h3>
+                    <div class="value" id="searchCount">-</div>
+                    <div class="subtitle">Total queries</div>
                 </div>
-                <div class="stat-card">
-                    <h3>Templates</h3>
-                    <div class="value">3</div>
+                <div class="stat-card highlight" onclick="window.location.href='/search-page'">
+                    <h3>✨ AI Search</h3>
+                    <div class="value">→</div>
+                    <div class="subtitle">Advanced search</div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h3>Quick Actions</h3>
+                <div class="action-buttons">
+                    <a href="/documents-management" class="action-btn">📤 Upload Documents</a>
+                    <a href="/search-page" class="action-btn">🔍 Advanced Search</a>
+                    <a href="/users-management" class="action-btn">👥 Manage Users</a>
+                    <a href="/docs" class="action-btn" target="_blank">📚 API Docs</a>
+                </div>
+            </div>
+            
+            <!-- Recent Searches -->
+            <div class="recent-section">
+                <h3>Recent Searches</h3>
+                <div id="recentSearches">
+                    <p style="color: #999;">Loading...</p>
                 </div>
             </div>
         </div>
         
         <script>
-            // Check if logged in
             const token = localStorage.getItem('access_token');
             if (!token) {
                 window.location.href = '/auth/login-page';
@@ -190,18 +338,13 @@ def dashboard():
             async function loadUserInfo() {
                 try {
                     const response = await fetch('/auth/me', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
                     
                     if (response.ok) {
                         const user = await response.json();
                         document.getElementById('userName').textContent = user.name;
-                        document.getElementById('welcomeMessage').textContent = 
-                            `You're logged in as ${user.email}. User type: ${user.type}`;
                     } else {
-                        // Token invalid, redirect to login
                         localStorage.removeItem('access_token');
                         window.location.href = '/auth/login-page';
                     }
@@ -210,31 +353,93 @@ def dashboard():
                 }
             }
             
+            // Load stats
+            async function loadStats() {
+                try {
+                    // Document count
+                    const docResponse = await fetch('/documents/stats/company', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (docResponse.ok) {
+                        const stats = await docResponse.json();
+                        document.getElementById('docCount').textContent = stats.total_documents;
+                    }
+                    
+                    // User count
+                    const userResponse = await fetch('/users/?page_size=1', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (userResponse.ok) {
+                        const users = await userResponse.json();
+                        document.getElementById('userCount').textContent = users.total;
+                    }
+                    
+                    // Search history count
+                    const searchResponse = await fetch('/search/history?limit=100', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (searchResponse.ok) {
+                        const searches = await searchResponse.json();
+                        document.getElementById('searchCount').textContent = searches.total;
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                }
+            }
+            
+            // Load recent searches
+            async function loadRecentSearches() {
+                try {
+                    const response = await fetch('/search/history?limit=5', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const container = document.getElementById('recentSearches');
+                        
+                        if (data.history && data.history.length > 0) {
+                            container.innerHTML = data.history.map(h => `
+                                <div class="recent-item" onclick="searchFromHistory('${h.query}')" style="cursor: pointer;">
+                                    <span class="query">"${h.query}"</span>
+                                    <span class="meta">${h.results_count} results</span>
+                                </div>
+                            `).join('');
+                        } else {
+                            container.innerHTML = '<p style="color: #999;">No recent searches yet. Try searching above!</p>';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading recent searches:', error);
+                }
+            }
+            
+            // Quick search from dashboard
+            function quickSearch() {
+                const query = document.getElementById('searchInput').value.trim();
+                if (query) {
+                    window.location.href = `/search-page?q=${encodeURIComponent(query)}`;
+                }
+            }
+            
+            // Search from history
+            function searchFromHistory(query) {
+                window.location.href = `/search-page?q=${encodeURIComponent(query)}`;
+            }
+            
             function logout() {
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('user');
                 window.location.href = '/auth/login-page';
             }
             
-            // Load user info on page load
+            // Initialize
             loadUserInfo();
-
-        // Load document count
-            async function loadDocCount() {
-                try {
-                    const response = await fetch('/documents/stats/company', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (response.ok) {
-                        const stats = await response.json();
-                        document.getElementById('docCount').textContent = stats.total_documents;
-                    }
-                } catch (error) {
-                    console.error('Error loading doc count:', error);
-                }
-            }
+            loadStats();
+            loadRecentSearches();
             
-            loadDocCount();    
+            // Focus search input
+            document.getElementById('searchInput').focus();
         </script>
     </body>
     </html>
@@ -1407,7 +1612,15 @@ def search_page():
             }
             
             // Focus search input on load
-            document.getElementById('searchInput').focus();
+            // Check for query parameter and auto-search
+                const urlParams = new URLSearchParams(window.location.search);
+                const queryParam = urlParams.get('q');
+                if (queryParam) {
+                    document.getElementById('searchInput').value = queryParam;
+                    performSearch();
+                } else {
+                    document.getElementById('searchInput').focus();
+                }
         </script>
     </body>
     </html>
