@@ -150,3 +150,18 @@ class ActivityLog(Base):
     action = Column(String, nullable=False)
     details = Column(JSON, default={})
     timestamp = Column(DateTime, default=datetime.utcnow)
+class UserOnboardingProgress(Base):
+    __tablename__ = "user_onboarding_progress"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    path_id = Column(Integer, ForeignKey("onboarding_paths.id"), nullable=False)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    current_step = Column(Integer, default=0)
+    completed_steps = Column(JSON, default=[])  # List of completed step indices
+    progress_data = Column(JSON, default={})    # Additional progress data
+    started_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+    
+    user = relationship("User")
+    path = relationship("OnboardingPath")
