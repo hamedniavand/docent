@@ -315,6 +315,7 @@ def dashboard():
                     <a href="/documents-management" class="action-btn">📤 Upload Documents</a>
                     <a href="/search-page" class="action-btn">🔍 Advanced Search</a>
                     <a href="/users-management" class="action-btn">👥 Manage Users</a>
+                    <a href="/onboarding-management" class="action-btn">📚 Onboarding</a>
                     <a href="/docs" class="action-btn" target="_blank">📚 API Docs</a>
                 </div>
             </div>
@@ -1621,6 +1622,812 @@ def search_page():
                 } else {
                     document.getElementById('searchInput').focus();
                 }
+        </script>
+    </body>
+    </html>
+    """
+@router.get("/onboarding-management", response_class=HTMLResponse)
+def onboarding_management():
+    """
+    Onboarding path management page
+    """
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - Onboarding Management</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 1200px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                transition: all 0.2s;
+            }
+            .btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .btn-primary:hover { transform: translateY(-2px); }
+            .btn-secondary {
+                background: #e0e0e0;
+                color: #333;
+            }
+            .btn-success {
+                background: #27ae60;
+                color: white;
+            }
+            .card {
+                background: white;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .card h2 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .path-card {
+                border: 2px solid #eee;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 15px;
+                transition: all 0.2s;
+            }
+            .path-card:hover {
+                border-color: #667eea;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            }
+            .path-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .path-name {
+                font-size: 18px;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+            .path-meta {
+                color: #7f8c8d;
+                font-size: 14px;
+            }
+            .steps-preview {
+                display: flex;
+                gap: 8px;
+                margin-top: 15px;
+                flex-wrap: wrap;
+            }
+            .step-badge {
+                background: #f0f0f0;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                color: #555;
+            }
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+            .modal-content {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            .modal-content h3 {
+                margin-bottom: 20px;
+                color: #2c3e50;
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #2c3e50;
+            }
+            .form-group input, .form-group textarea {
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #e0e0e0;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+            .form-group textarea {
+                min-height: 80px;
+                resize: vertical;
+            }
+            .steps-builder {
+                border: 2px dashed #e0e0e0;
+                border-radius: 8px;
+                padding: 15px;
+                margin-top: 10px;
+            }
+            .step-item {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                position: relative;
+            }
+            .step-item .step-number {
+                position: absolute;
+                left: -10px;
+                top: -10px;
+                background: #667eea;
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            .step-item input {
+                margin-bottom: 8px;
+            }
+            .remove-step {
+                position: absolute;
+                right: 10px;
+                top: 10px;
+                background: #e74c3c;
+                color: white;
+                border: none;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            .add-step-btn {
+                width: 100%;
+                padding: 12px;
+                border: 2px dashed #667eea;
+                background: transparent;
+                color: #667eea;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .add-step-btn:hover {
+                background: #f0f0ff;
+            }
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                color: #7f8c8d;
+            }
+            .empty-state h3 {
+                margin-bottom: 10px;
+                color: #2c3e50;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📚 Onboarding Management</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">
+                ← Back to Dashboard
+            </button>
+        </div>
+        
+        <div class="container">
+            <div class="card">
+                <h2>
+                    <span>Onboarding Paths</span>
+                    <button class="btn btn-primary" onclick="showCreateModal()">+ Create Path</button>
+                </h2>
+                
+                <div id="pathsList">
+                    <div class="empty-state">
+                        <h3>Loading...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Create Modal -->
+        <div id="createModal" class="modal">
+            <div class="modal-content">
+                <h3>Create Onboarding Path</h3>
+                <form id="createForm" onsubmit="createPath(event)">
+                    <div class="form-group">
+                        <label>Path Name</label>
+                        <input type="text" id="pathName" required placeholder="e.g., New Employee Onboarding">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="pathDescription" placeholder="Brief description of this onboarding path"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Steps</label>
+                        <div class="steps-builder" id="stepsBuilder">
+                            <!-- Steps will be added here -->
+                        </div>
+                        <button type="button" class="add-step-btn" onclick="addStep()">+ Add Step</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Path</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <script>
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/auth/login-page';
+            }
+            
+            let stepCount = 0;
+            
+            // Load paths
+            async function loadPaths() {
+                try {
+                    const response = await fetch('/onboarding/paths', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        renderPaths(data.paths);
+                    }
+                } catch (error) {
+                    console.error('Error loading paths:', error);
+                }
+            }
+            
+            function renderPaths(paths) {
+                const container = document.getElementById('pathsList');
+                
+                if (paths.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No onboarding paths yet</h3>
+                            <p>Create your first onboarding path to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = paths.map(path => {
+                    const steps = path.steps_json?.steps || [];
+                    return `
+                        <div class="path-card">
+                            <div class="path-header">
+                                <span class="path-name">${path.name}</span>
+                                <div>
+                                    <button class="btn btn-success" onclick="viewPath(${path.id})" style="margin-right: 5px;">
+                                        View
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="deletePath(${path.id})" style="padding: 8px 15px;">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="path-meta">${steps.length} steps • Created ${new Date(path.created_at).toLocaleDateString()}</div>
+                            <div class="steps-preview">
+                                ${steps.slice(0, 5).map((s, i) => `<span class="step-badge">${i+1}. ${s.title}</span>`).join('')}
+                                ${steps.length > 5 ? `<span class="step-badge">+${steps.length - 5} more</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            function showCreateModal() {
+                document.getElementById('createModal').style.display = 'flex';
+                stepCount = 0;
+                document.getElementById('stepsBuilder').innerHTML = '';
+                addStep(); // Add first step by default
+            }
+            
+            function closeCreateModal() {
+                document.getElementById('createModal').style.display = 'none';
+                document.getElementById('createForm').reset();
+            }
+            
+            function addStep() {
+                stepCount++;
+                const builder = document.getElementById('stepsBuilder');
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step-item';
+                stepDiv.id = `step-${stepCount}`;
+                stepDiv.innerHTML = `
+                    <span class="step-number">${stepCount}</span>
+                    <button type="button" class="remove-step" onclick="removeStep(${stepCount})">×</button>
+                    <input type="text" placeholder="Step title" class="step-title" required>
+                    <textarea placeholder="Step description" class="step-desc"></textarea>
+                `;
+                builder.appendChild(stepDiv);
+            }
+            
+            function removeStep(num) {
+                const step = document.getElementById(`step-${num}`);
+                if (step) step.remove();
+                renumberSteps();
+            }
+            
+            function renumberSteps() {
+                const steps = document.querySelectorAll('.step-item');
+                steps.forEach((step, i) => {
+                    step.querySelector('.step-number').textContent = i + 1;
+                });
+            }
+            
+            async function createPath(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('pathName').value;
+                const description = document.getElementById('pathDescription').value;
+                
+                const steps = [];
+                document.querySelectorAll('.step-item').forEach((item, i) => {
+                    const title = item.querySelector('.step-title').value;
+                    const desc = item.querySelector('.step-desc').value;
+                    if (title) {
+                        steps.push({
+                            title: title,
+                            description: desc || '',
+                            order: i + 1
+                        });
+                    }
+                });
+                
+                if (steps.length === 0) {
+                    alert('Please add at least one step');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/onboarding/paths', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            description: description,
+                            steps: steps
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        alert('Onboarding path created successfully!');
+                        closeCreateModal();
+                        loadPaths();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + error.detail);
+                    }
+                } catch (error) {
+                    alert('Error creating path: ' + error.message);
+                }
+            }
+            
+            function viewPath(pathId) {
+                window.location.href = `/onboarding-view/${pathId}`;
+            }
+            
+            async function deletePath(pathId) {
+                if (!confirm('Are you sure you want to delete this onboarding path?')) return;
+                
+                try {
+                    const response = await fetch(`/onboarding/paths/${pathId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        alert('Path deleted');
+                        loadPaths();
+                    }
+                } catch (error) {
+                    alert('Error deleting path');
+                }
+            }
+            
+            // Initialize
+            loadPaths();
+        </script>
+    </body>
+    </html>
+    """
+@router.get("/onboarding-view/{path_id}", response_class=HTMLResponse)
+def onboarding_view(path_id: int):
+    """
+    View and complete onboarding path
+    """
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - Onboarding</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+                min-height: 100vh;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 900px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .btn-secondary {
+                background: #e0e0e0;
+                color: #333;
+            }
+            .btn-success {
+                background: #27ae60;
+                color: white;
+            }
+            
+            /* Progress Header */
+            .progress-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 30px;
+                border-radius: 12px;
+                color: white;
+                margin-bottom: 30px;
+            }
+            .progress-header h2 {
+                margin-bottom: 15px;
+            }
+            .progress-bar-container {
+                background: rgba(255,255,255,0.3);
+                height: 10px;
+                border-radius: 5px;
+                overflow: hidden;
+            }
+            .progress-bar {
+                background: white;
+                height: 100%;
+                border-radius: 5px;
+                transition: width 0.5s ease;
+            }
+            .progress-text {
+                margin-top: 10px;
+                font-size: 14px;
+                opacity: 0.9;
+            }
+            
+            /* Steps */
+            .steps-container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            .step-item {
+                padding: 25px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                gap: 20px;
+                transition: background 0.2s;
+            }
+            .step-item:last-child {
+                border-bottom: none;
+            }
+            .step-item.active {
+                background: #f8f9ff;
+            }
+            .step-item.completed {
+                background: #f0fff4;
+            }
+            .step-number {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #e0e0e0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: #666;
+                flex-shrink: 0;
+            }
+            .step-item.active .step-number {
+                background: #667eea;
+                color: white;
+            }
+            .step-item.completed .step-number {
+                background: #27ae60;
+                color: white;
+            }
+            .step-content {
+                flex: 1;
+            }
+            .step-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 8px;
+            }
+            .step-description {
+                color: #666;
+                line-height: 1.6;
+                margin-bottom: 15px;
+            }
+            .step-actions {
+                display: flex;
+                gap: 10px;
+            }
+            .checkbox-label {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+                font-size: 14px;
+                color: #555;
+            }
+            .checkbox-label input {
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+            }
+            
+            /* Completion */
+            .completion-card {
+                background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+                padding: 40px;
+                border-radius: 12px;
+                color: white;
+                text-align: center;
+                margin-top: 30px;
+            }
+            .completion-card h2 {
+                margin-bottom: 10px;
+            }
+            .completion-card p {
+                opacity: 0.9;
+            }
+            
+            .loading {
+                text-align: center;
+                padding: 60px;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📚 Onboarding</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='/onboarding-management'">
+                ← Back to Paths
+            </button>
+        </div>
+        
+        <div class="container">
+            <div id="content">
+                <div class="loading">Loading onboarding path...</div>
+            </div>
+        </div>
+        
+        <script>
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                window.location.href = '/auth/login-page';
+            }
+            
+            // Get path ID from URL
+            const pathId = window.location.pathname.split('/').pop();
+            let currentPath = null;
+            let userProgress = null;
+            
+            async function loadPath() {
+                try {
+                    // Load path details
+                    const pathResponse = await fetch(`/onboarding/paths/${pathId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (!pathResponse.ok) {
+                        document.getElementById('content').innerHTML = '<div class="loading">Path not found</div>';
+                        return;
+                    }
+                    
+                    currentPath = await pathResponse.json();
+                    
+                    // Load or create progress
+                    const progressResponse = await fetch('/onboarding/progress/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (progressResponse.ok) {
+                        const progressList = await progressResponse.json();
+                        userProgress = progressList.find(p => p.path_id === parseInt(pathId));
+                    }
+                    
+                    // If no progress, start it
+                    if (!userProgress) {
+                        await startProgress();
+                    }
+                    
+                    renderOnboarding();
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('content').innerHTML = '<div class="loading">Error loading onboarding</div>';
+                }
+            }
+            
+            async function startProgress() {
+                try {
+                    // Get current user
+                    const meResponse = await fetch('/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const me = await meResponse.json();
+                    
+                    const response = await fetch('/onboarding/progress/start', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            path_id: parseInt(pathId),
+                            user_id: me.id
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        userProgress = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Error starting progress:', error);
+                }
+            }
+            
+            function renderOnboarding() {
+                const steps = currentPath.steps_json?.steps || [];
+                const completedSteps = userProgress?.completed_steps || [];
+                const totalSteps = steps.length;
+                const completedCount = completedSteps.length;
+                const percent = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+                const isComplete = completedCount >= totalSteps;
+                
+                let html = `
+                    <div class="progress-header">
+                        <h2>${currentPath.name}</h2>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="progress-text">${completedCount} of ${totalSteps} steps completed (${percent}%)</div>
+                    </div>
+                    
+                    <div class="steps-container">
+                        ${steps.map((step, index) => {
+                            const isCompleted = completedSteps.includes(index);
+                            const isActive = index === completedCount && !isComplete;
+                            return `
+                                <div class="step-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
+                                    <div class="step-number">${isCompleted ? '✓' : index + 1}</div>
+                                    <div class="step-content">
+                                        <div class="step-title">${step.title}</div>
+                                        <div class="step-description">${step.description || 'No description'}</div>
+                                        <div class="step-actions">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" 
+                                                       ${isCompleted ? 'checked' : ''} 
+                                                       onchange="toggleStep(${index}, this.checked)">
+                                                Mark as complete
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                
+                if (isComplete) {
+                    html += `
+                        <div class="completion-card">
+                            <h2>🎉 Congratulations!</h2>
+                            <p>You have completed this onboarding path.</p>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('content').innerHTML = html;
+            }
+            
+            async function toggleStep(stepIndex, completed) {
+                if (!userProgress) return;
+                
+                try {
+                    const response = await fetch(`/onboarding/progress/${userProgress.id}/step`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            step_index: stepIndex,
+                            completed: completed
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        userProgress.completed_steps = result.completed_steps;
+                        renderOnboarding();
+                    }
+                } catch (error) {
+                    console.error('Error updating step:', error);
+                }
+            }
+            
+            // Initialize
+            loadPath();
         </script>
     </body>
     </html>
