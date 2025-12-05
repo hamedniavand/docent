@@ -305,6 +305,11 @@ def dashboard():
                     <h3>✨ AI Search</h3>
                     <div class="value">→</div>
                     <div class="subtitle">Advanced search</div>
+                <div class="stat-card" onclick="window.location.href='/onboarding-management'">
+                    <h3>📚 Onboarding</h3>
+                    <div class="value" id="onboardingCount">-</div>
+                    <div class="subtitle">Active paths</div>
+                </div>
                 </div>
             </div>
             
@@ -383,6 +388,17 @@ def dashboard():
                         const searches = await searchResponse.json();
                         document.getElementById('searchCount').textContent = searches.total;
                     }
+                    
+                    // Onboarding stats
+                    const onboardingResponse = await fetch('/onboarding/stats', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (onboardingResponse.ok) {
+                        const onboarding = await onboardingResponse.json();
+                        document.getElementById('onboardingCount').textContent = onboarding.active_onboardings;
+                    }
+
+
                 } catch (error) {
                     console.error('Error loading stats:', error);
                 }
@@ -2403,6 +2419,17 @@ def onboarding_view(path_id: int):
             async function toggleStep(stepIndex, completed) {
                 if (!userProgress) return;
                 
+                // Optimistic update - immediately update UI
+                if (completed) {
+                    if (!userProgress.completed_steps.includes(stepIndex)) {
+                        userProgress.completed_steps.push(stepIndex);
+                        userProgress.completed_steps.sort((a, b) => a - b);
+                    }
+                } else {
+                    userProgress.completed_steps = userProgress.completed_steps.filter(s => s !== stepIndex);
+                }
+                renderOnboarding();
+                
                 try {
                     const response = await fetch(`/onboarding/progress/${userProgress.id}/step`, {
                         method: 'PUT',
@@ -2423,6 +2450,8 @@ def onboarding_view(path_id: int):
                     }
                 } catch (error) {
                     console.error('Error updating step:', error);
+                    // Revert on error
+                    loadPath();
                 }
             }
             

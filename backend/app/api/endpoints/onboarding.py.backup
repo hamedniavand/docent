@@ -8,6 +8,8 @@ from app.models.models import (
     OnboardingPath, User, SystemAdmin, 
     UserOnboardingProgress, Company
 )
+
+
 from app.schemas.onboarding import (
     OnboardingPathCreate, OnboardingPathResponse, OnboardingPathListResponse,
     UserProgressCreate, StepProgressUpdate, UserProgressResponse
@@ -30,6 +32,7 @@ def create_onboarding_path(
     if isinstance(current_user, SystemAdmin):
         raise HTTPException(status_code=400, detail="System admins cannot create paths")
     
+    # Convert steps to JSON
     steps_json = {
         "steps": [step.dict() for step in path_data.steps],
         "total_steps": len(path_data.steps)
@@ -143,10 +146,12 @@ def start_onboarding(
     if isinstance(current_user, SystemAdmin):
         raise HTTPException(status_code=400, detail="System admins cannot start onboarding")
     
+    # Check path exists
     path = db.query(OnboardingPath).filter(OnboardingPath.id == data.path_id).first()
     if not path:
         raise HTTPException(status_code=404, detail="Onboarding path not found")
     
+    # Check if already started
     existing = db.query(UserOnboardingProgress).filter(
         UserOnboardingProgress.user_id == data.user_id,
         UserOnboardingProgress.path_id == data.path_id
@@ -155,6 +160,7 @@ def start_onboarding(
     if existing:
         raise HTTPException(status_code=400, detail="User already started this onboarding")
     
+    # Create progress record
     progress = UserOnboardingProgress(
         user_id=data.user_id,
         path_id=data.path_id,
@@ -236,6 +242,7 @@ def update_step_progress(
     if not isinstance(current_user, SystemAdmin) and progress.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Update completed steps
     completed = progress.completed_steps or []
     
     if data.completed and data.step_index not in completed:
@@ -247,6 +254,7 @@ def update_step_progress(
     progress.completed_steps = completed
     progress.current_step = max(completed) + 1 if completed else 0
     
+    # Check if all steps completed
     path = db.query(OnboardingPath).filter(OnboardingPath.id == progress.path_id).first()
     total_steps = path.steps_json.get("total_steps", 0) if path else 0
     
@@ -271,6 +279,7 @@ def get_user_progress(
     current_user = Depends(require_active_user)
 ):
     """Get onboarding progress for a specific user (admin only)"""
+    # Check permissions - only same company or own progress
     if not isinstance(current_user, SystemAdmin):
         user = db.query(User).filter(User.id == user_id).first()
         if not user or user.company_id != current_user.company_id:
@@ -300,10 +309,110 @@ def get_user_progress(
                 started_at=progress.started_at,
                 completed_at=progress.completed_at
             ))
+ 
+ @router.post("/assign")
+async def assign_onboarding(
+    path_id: int,
+    user_id: int,
+    send_email: bool = True,
+    db: Session = Depends(get_db),
+    current_user = Depends(require_active_user)
+):
+    """Assign an onboarding path to a user and optionally send email"""
+    if isinstance(current_user, SystemAdmin):
+        raise HTTPException(status_code=400, detail="System admins cannot assign onboarding")
     
-    return results
-
-@router.get("/stats")
+    # Verify path exists and belongs to company
+    path = db.query(OnboardingPath).filter(
+        OnboardingPath.id == path_id,
+        OnboardingPath.company_id == current_user.company_id
+    ).first()
+    
+    if not path:
+        raise HTTPException(status_code=404, detail="Onboarding path not found")
+    
+    # Verify user exists and belongs to company
+    user = db.query(User).filter(
+        User.id == user_id,
+        User.company_id == current_user.company_id
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if already assigned
+    existing = db.query(UserOnboardingProgress).filter(
+        UserOnboardingProgress.user_id == user_id,
+        UserOnboardingProgress.path_id == path_id
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="User already assigned to this path")
+    
+    # Create progress record
+    progress = UserOnboardingProgress(
+        user_id=user_id,
+        path_id=path_id,
+        company_id=current_user.company_id,
+        current_step=0,
+        completed_steps=[]
+    )
+    
+    db.add(progress)
+    db.commit()
+    db.refresh(progress)
+    
+    # Send email notification
+    if send_email and user.email:
+        try:
+            from app.services.email import send_email
+            
+            company = db.query(Company).filter(Company.id == current_user.company_id).first()
+            company_name = company.name if company else "Your Company"
+            
+            html_content = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; color: white; text-align: center;">
+                    <h1>📚 New Onboarding Assigned</h1>
+                </div>
+                <div style="padding: 30px; background: #f9f9f9; border-radius: 0 0 10px 10px;">
+                    <p>Hi {user.name},</p>
+                    <p>You have been assigned a new onboarding path: <strong>{path.name}</strong></p>
+                    <p>This onboarding has {path.steps_json.get('total_steps', 0)} steps to complete.</p>
+                    <p style="text-align: center; margin: 30px 0;">
+                        <a href="https://docent.hexoplus.ir/onboarding-view/{path_id}" 
+                           style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                            Start Onboarding
+                        </a>
+                    </p>
+                    <p style="color: #666; font-size: 14px;">
+                        Best regards,<br>
+                        {company_name} Team
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+            
+            await send_email(
+                to_email=user.email,
+                subject=f"New Onboarding: {path.name}",
+                html_content=html_content
+            )
+            logger.info(f"Onboarding email sent to {user.email}")
+        except Exception as e:
+            logger.error(f"Failed to send onboarding email: {e}")
+    
+    return {
+        "message": "Onboarding assigned successfully",
+        "progress_id": progress.id,
+        "user_id": user_id,
+        "path_id": path_id,
+        "email_sent": send_email
+    }
+ 
+ @router.get("/stats")
 def get_onboarding_stats(
     db: Session = Depends(get_db),
     current_user = Depends(require_active_user)
@@ -314,22 +423,47 @@ def get_onboarding_stats(
     
     company_id = current_user.company_id
     
+    # Count paths
     total_paths = db.query(OnboardingPath).filter(
         OnboardingPath.company_id == company_id
     ).count()
     
+    # Count active onboardings (started but not completed)
     active_onboardings = db.query(UserOnboardingProgress).filter(
         UserOnboardingProgress.company_id == company_id,
         UserOnboardingProgress.completed_at == None
     ).count()
     
+    # Count completed onboardings
     completed_onboardings = db.query(UserOnboardingProgress).filter(
         UserOnboardingProgress.company_id == company_id,
         UserOnboardingProgress.completed_at != None
     ).count()
     
+    # Get recent activity
+    recent = db.query(UserOnboardingProgress).filter(
+        UserOnboardingProgress.company_id == company_id
+    ).order_by(UserOnboardingProgress.started_at.desc()).limit(5).all()
+    
+    recent_activity = []
+    for progress in recent:
+        user = db.query(User).filter(User.id == progress.user_id).first()
+        path = db.query(OnboardingPath).filter(OnboardingPath.id == progress.path_id).first()
+        if user and path:
+            total_steps = path.steps_json.get("total_steps", 0)
+            completed_steps = len(progress.completed_steps or [])
+            recent_activity.append({
+                "user_name": user.name,
+                "path_name": path.name,
+                "progress_percent": round((completed_steps / total_steps * 100) if total_steps > 0 else 0),
+                "is_complete": progress.completed_at is not None,
+                "started_at": progress.started_at
+            })
+    
     return {
         "total_paths": total_paths,
         "active_onboardings": active_onboardings,
-        "completed_onboardings": completed_onboardings
-    }
+        "completed_onboardings": completed_onboardings,
+        "recent_activity": recent_activity
+    }   
+    return results
