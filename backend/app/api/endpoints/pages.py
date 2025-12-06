@@ -42,7 +42,7 @@ def root():
     <div class="container">
         <h1>🎓 Docent</h1>
         <p>AI-Powered Knowledge Retention Platform</p>
-        <p style="margin: 30px 0;">Day 18/30 Complete • 60% Progress</p>
+        <p style="margin: 30px 0;">Day 20/30 Complete • 67% Progress</p>
         <a href="/auth/login-page" class="btn">Launch Dashboard →</a>
     </div>
 </body>
@@ -346,6 +346,7 @@ def dashboard():
                     <a href="/cases-management" class="action-btn">📋 Case Studies</a>
                     <a href="/analytics-dashboard" class="action-btn">📊 Analytics</a>
                     <a href="/settings" class="action-btn">⚙️ Settings</a>
+                    <a href="/help" class="action-btn">📚 Help</a>
                     <a href="/docs" class="action-btn" target="_blank">📚 API Docs</a>
                 </div>
             </div>
@@ -1160,7 +1161,39 @@ def documents_management():
                 }
             }
             
-            // Load documents
+            
+            // Preview document
+            async function previewDocument(docId, filename) {
+                document.getElementById('previewModal').style.display = 'flex';
+                document.getElementById('previewTitle').textContent = filename;
+                document.getElementById('previewContent').textContent = 'Loading...';
+                
+                try {
+                    // Get document summary/text from processing status
+                    const response = await fetch(`/processing/status/${docId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.summary) {
+                            document.getElementById('previewContent').textContent = data.summary;
+                        } else {
+                            document.getElementById('previewContent').textContent = 'No preview available. Document may not be processed yet.';
+                        }
+                    } else {
+                        document.getElementById('previewContent').textContent = 'Could not load preview.';
+                    }
+                } catch (error) {
+                    document.getElementById('previewContent').textContent = 'Error loading preview: ' + error.message;
+                }
+            }
+            
+            function closePreviewModal() {
+                document.getElementById('previewModal').style.display = 'none';
+            }
+            
+// Load documents
             async function loadDocuments(search = '', page = 1) {
                 currentPage = page;
                 // SystemAdmin sees all documents
@@ -3443,6 +3476,55 @@ def analytics_dashboard():
         <script>
             const token = localStorage.getItem('access_token');
             let currentPeriod = 30;
+            // Export analytics to CSV
+            function exportAnalytics() {
+                if (!analyticsData) {
+                    alert('No data to export');
+                    return;
+                }
+                
+                let csv = 'Analytics Report\n\n';
+                csv += 'Summary\n';
+                csv += 'Metric,Value\n';
+                csv += `Total Searches,${analyticsData.search?.total_searches || 0}\n`;
+                csv += `Searches Today,${analyticsData.search?.searches_today || 0}\n`;
+                csv += `Total Documents,${analyticsData.documents?.total_documents || 0}\n`;
+                csv += `Processed Documents,${analyticsData.documents?.processed_documents || 0}\n`;
+                csv += `Total Users,${analyticsData.users?.total_users || 0}\n`;
+                csv += `Active Users,${analyticsData.users?.active_users || 0}\n`;
+                csv += '\n';
+                
+                if (analyticsData.search?.top_queries?.length) {
+                    csv += 'Top Search Queries\n';
+                    csv += 'Query,Count\n';
+                    analyticsData.search.top_queries.forEach(q => {
+                        csv += `"${q.query}",${q.count}\n`;
+                    });
+                    csv += '\n';
+                }
+                
+                if (analyticsData.documents?.documents_by_type) {
+                    csv += 'Documents by Type\n';
+                    csv += 'Type,Count\n';
+                    Object.entries(analyticsData.documents.documents_by_type).forEach(([type, count]) => {
+                        csv += `${type},${count}\n`;
+                    });
+                }
+                
+                // Download
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `analytics_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+            
+            let analyticsData = null;
+
             
             if (!token) {
                 window.location.href = '/auth/login-page';
@@ -3946,6 +4028,229 @@ def settings_page():
             loadUserInfo();
             loadPreferences();
         </script>
+    </body>
+    </html>
+    """
+
+@router.get("/help", response_class=HTMLResponse)
+def help_page():
+    """Help and documentation page"""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - Help & Documentation</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+                line-height: 1.6;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 900px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .card {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .card h2 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #667eea;
+            }
+            .card h3 {
+                color: #34495e;
+                margin: 20px 0 10px;
+            }
+            .feature-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+            }
+            .feature-item {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                border-left: 4px solid #667eea;
+            }
+            .feature-item h4 {
+                color: #667eea;
+                margin-bottom: 10px;
+            }
+            .shortcut-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 15px;
+            }
+            .shortcut-table th, .shortcut-table td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+            .shortcut-table th {
+                background: #f8f9fa;
+                font-weight: 600;
+            }
+            kbd {
+                background: #eee;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-family: monospace;
+                border: 1px solid #ccc;
+            }
+            .btn {
+                padding: 10px 20px;
+                background: #667eea;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-block;
+            }
+            .faq-item {
+                margin-bottom: 15px;
+            }
+            .faq-item strong {
+                color: #2c3e50;
+            }
+            .version-info {
+                text-align: center;
+                color: #999;
+                margin-top: 30px;
+                padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📚 Help & Documentation</h1>
+            <a href="/dashboard" class="btn">← Back to Dashboard</a>
+        </div>
+        
+        <div class="container">
+            <!-- Getting Started -->
+            <div class="card">
+                <h2>🚀 Getting Started</h2>
+                <p>Welcome to Docent - your AI-powered knowledge retention platform. Here's how to get started:</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h4>1. Upload Documents</h4>
+                        <p>Go to Documents and upload PDF, DOCX, PPTX, XLSX, or TXT files. Max 50MB each.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>2. Process Documents</h4>
+                        <p>Click "Process" to extract text and create searchable embeddings.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>3. Search Knowledge</h4>
+                        <p>Use AI-powered semantic search to find relevant information instantly.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>4. Create Case Studies</h4>
+                        <p>Document important projects using templates and link related documents.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features -->
+            <div class="card">
+                <h2>✨ Features</h2>
+                
+                <h3>📄 Document Management</h3>
+                <p>Upload and organize documents. Supported formats: PDF, DOCX, PPTX, XLSX, TXT.</p>
+                
+                <h3>�� AI Search</h3>
+                <p>Semantic search finds relevant content even with different wording. Results are ranked by relevance.</p>
+                
+                <h3>📋 Case Studies</h3>
+                <p>Create structured case studies using templates. Link documents and generate AI summaries.</p>
+                
+                <h3>�� Onboarding</h3>
+                <p>Create learning paths for new employees with step-by-step progress tracking.</p>
+                
+                <h3>📊 Analytics</h3>
+                <p>Track search trends, document usage, and user engagement. Export reports to CSV.</p>
+                
+                <h3>👥 User Management</h3>
+                <p>Invite team members, assign roles, and manage permissions.</p>
+            </div>
+            
+            <!-- Keyboard Shortcuts -->
+            <div class="card">
+                <h2>⌨️ Keyboard Shortcuts</h2>
+                <table class="shortcut-table">
+                    <tr><th>Shortcut</th><th>Action</th></tr>
+                    <tr><td><kbd>Ctrl</kbd> + <kbd>K</kbd></td><td>Open search</td></tr>
+                    <tr><td><kbd>Ctrl</kbd> + <kbd>U</kbd></td><td>Upload document</td></tr>
+                    <tr><td><kbd>Esc</kbd></td><td>Close modal</td></tr>
+                    <tr><td><kbd>Enter</kbd></td><td>Submit form</td></tr>
+                </table>
+            </div>
+            
+            <!-- FAQ -->
+            <div class="card">
+                <h2>❓ FAQ</h2>
+                
+                <div class="faq-item">
+                    <strong>Q: How long does document processing take?</strong>
+                    <p>A: Most documents process in under 30 seconds. Larger files may take a few minutes.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q: What file size is supported?</strong>
+                    <p>A: Maximum 50MB per file. For larger files, consider splitting them.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q: How does AI search work?</strong>
+                    <p>A: Documents are converted to embeddings. Search queries are matched semantically, not just by keywords.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q: Can I delete processed documents?</strong>
+                    <p>A: Yes, deleting a document removes it and all associated search data.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <strong>Q: How do I invite team members?</strong>
+                    <p>A: Go to Users, click "Invite User", enter their email. They'll receive an invitation.</p>
+                </div>
+            </div>
+            
+            <!-- Contact -->
+            <div class="card">
+                <h2>📧 Support</h2>
+                <p>Need help? Contact your administrator or reach out to support.</p>
+                <p style="margin-top: 15px;">
+                    <strong>Email:</strong> support@docent.com<br>
+                    <strong>Documentation:</strong> <a href="https://github.com/hamedniavand/docent" target="_blank">GitHub Repository</a>
+                </p>
+            </div>
+            
+            <div class="version-info">
+                <p>Docent v1.0 • Day 20/30 • 67% Complete</p>
+            </div>
+        </div>
     </body>
     </html>
     """
