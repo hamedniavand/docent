@@ -42,7 +42,7 @@ def root():
     <div class="container">
         <h1>🎓 Docent</h1>
         <p>AI-Powered Knowledge Retention Platform</p>
-        <p style="margin: 30px 0;">Day 26/30 Complete • 87% Progress</p>
+        <p style="margin: 30px 0;">Day 27/30 Complete • 90% Progress</p>
         <a href="/auth/login-page" class="btn">Launch Dashboard →</a>
     </div>
 </body>

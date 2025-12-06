@@ -15,7 +15,7 @@ from app.schemas.analytics import (
     SearchAnalytics, DocumentAnalytics, UserAnalytics,
     DashboardAnalytics, AnalyticsSummary
 )
-from app.api.deps.auth import require_active_user
+from app.api.deps.auth import require_active_user, require_system_admin
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
@@ -388,3 +388,43 @@ def get_dashboard_analytics(
         users=user_analytics,
         recent_activity=recent_activity
     )
+
+@router.post("/backup")
+async def create_backup(
+    current_user = Depends(require_system_admin)
+):
+    """Create database backup (System Admin only)"""
+    import subprocess
+    import os
+    from datetime import datetime
+    
+    backup_dir = "/opt/docent/backups"
+    os.makedirs(backup_dir, exist_ok=True)
+    date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    try:
+        # Run backup
+        result = subprocess.run(
+            ["docker", "exec", "docent-postgres", "pg_dump", "-U", "docent_user", "docent"],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        
+        if result.returncode == 0:
+            backup_file = f"{backup_dir}/db_{date_str}.sql"
+            with open(backup_file, 'w') as f:
+                f.write(result.stdout)
+            
+            # Compress
+            subprocess.run(["gzip", backup_file])
+            
+            return {
+                "success": True,
+                "message": "Backup created",
+                "filename": f"db_{date_str}.sql.gz"
+            }
+        else:
+            return {"success": False, "message": result.stderr}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
