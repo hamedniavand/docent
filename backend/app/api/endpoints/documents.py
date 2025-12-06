@@ -191,8 +191,12 @@ def list_documents(
     """
     query = db.query(Document)
     
-    # Filter by company
-    if company_id:
+    # Handle SystemAdmin - can see all or filter by company_id
+    if isinstance(current_user, SystemAdmin):
+        if company_id:
+            query = query.filter(Document.company_id == company_id)
+        # else: show all documents for system admin
+    elif company_id:
         query = query.filter(Document.company_id == company_id)
     else:
         query = query.filter(Document.company_id == current_user.company_id)

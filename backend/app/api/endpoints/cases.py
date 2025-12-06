@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 
 from app.core.database import get_db
-from app.models.models import CaseTemplate, CaseInstance, User, Document, ActivityLog
+from app.models.models import CaseTemplate, CaseInstance, User, Document, ActivityLog, SystemAdmin
 from app.schemas.cases import (
     CaseTemplateCreate, CaseTemplateResponse,
     CaseInstanceCreate, CaseInstanceUpdate, CaseInstanceResponse,
@@ -24,6 +24,11 @@ def list_templates(
     current_user = Depends(require_active_user)
 ):
     """List all available case templates (company + default)"""
+    # SystemAdmin sees all default templates
+    if isinstance(current_user, SystemAdmin):
+        templates = db.query(CaseTemplate).filter(CaseTemplate.is_default == True).all()
+        return templates
+    
     templates = db.query(CaseTemplate).filter(
         (CaseTemplate.company_id == current_user.company_id) | 
         (CaseTemplate.is_default == True)

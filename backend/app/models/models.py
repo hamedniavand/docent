@@ -60,6 +60,12 @@ class User(Base):
     name = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     last_login = Column(DateTime, nullable=True)
+    notification_preferences = Column(JSON, default={
+        "email_on_document_processed": True,
+        "email_on_new_case": True,
+        "email_weekly_digest": True,
+        "email_onboarding_reminders": True
+    })
     created_at = Column(DateTime, default=datetime.utcnow)
     
     company = relationship("Company", back_populates="users")

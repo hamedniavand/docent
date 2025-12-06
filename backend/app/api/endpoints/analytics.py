@@ -48,10 +48,14 @@ def get_activity_logs(
     """Get activity logs for the company"""
     since = datetime.utcnow() - timedelta(days=days)
     
-    query = db.query(ActivityLog).filter(
-        ActivityLog.company_id == current_user.company_id,
-        ActivityLog.timestamp >= since
-    )
+    # Handle SystemAdmin - see all activity
+    if isinstance(current_user, SystemAdmin):
+        query = db.query(ActivityLog).filter(ActivityLog.timestamp >= since)
+    else:
+        query = db.query(ActivityLog).filter(
+            ActivityLog.company_id == current_user.company_id,
+            ActivityLog.timestamp >= since
+        )
     
     if action:
         query = query.filter(ActivityLog.action.ilike(f"%{action}%"))
@@ -93,6 +97,16 @@ def get_search_analytics(
     current_user = Depends(require_active_user)
 ):
     """Get search analytics"""
+    # Handle SystemAdmin
+    if isinstance(current_user, SystemAdmin):
+        return SearchAnalytics(
+            total_searches=0,
+            searches_today=0,
+            searches_this_week=0,
+            top_queries=[],
+            searches_by_day=[]
+        )
+    
     now = datetime.utcnow()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week_start = today_start - timedelta(days=7)
@@ -151,6 +165,17 @@ def get_document_analytics(
     current_user = Depends(require_active_user)
 ):
     """Get document analytics"""
+    # Handle SystemAdmin
+    if isinstance(current_user, SystemAdmin):
+        return DocumentAnalytics(
+            total_documents=0,
+            processed_documents=0,
+            total_chunks=0,
+            documents_by_type={},
+            uploads_by_day=[],
+            most_searched_docs=[]
+        )
+    
     period_start = datetime.utcnow() - timedelta(days=days)
     
     # Total documents
@@ -210,6 +235,16 @@ def get_user_analytics(
     current_user = Depends(require_active_user)
 ):
     """Get user analytics"""
+    # Handle SystemAdmin
+    if isinstance(current_user, SystemAdmin):
+        return UserAnalytics(
+            total_users=0,
+            active_users=0,
+            users_by_role={},
+            recent_logins=[],
+            most_active_users=[]
+        )
+    
     week_ago = datetime.utcnow() - timedelta(days=7)
     
     # Total users

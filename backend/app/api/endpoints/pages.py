@@ -42,7 +42,7 @@ def root():
     <div class="container">
         <h1>🎓 Docent</h1>
         <p>AI-Powered Knowledge Retention Platform</p>
-        <p style="margin: 30px 0;">Day 7/30 Complete • 23% Progress</p>
+        <p style="margin: 30px 0;">Day 18/30 Complete • 60% Progress</p>
         <a href="/auth/login-page" class="btn">Launch Dashboard →</a>
     </div>
 </body>
@@ -323,6 +323,7 @@ def dashboard():
                     <a href="/onboarding-management" class="action-btn">📚 Onboarding</a>
                     <a href="/cases-management" class="action-btn">📋 Case Studies</a>
                     <a href="/analytics-dashboard" class="action-btn">📊 Analytics</a>
+                    <a href="/settings" class="action-btn">⚙️ Settings</a>
                     <a href="/docs" class="action-btn" target="_blank">📚 API Docs</a>
                 </div>
             </div>
@@ -687,7 +688,8 @@ def users_management():
             
             // Load roles
             async function loadRoles() {
-                const response = await fetch(`/users/company/${currentUser.company_id}/roles`, {
+                const companyId = currentUser.company_id || 1;
+                const response = await fetch(`/users/company/${companyId}/roles`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {
@@ -702,7 +704,9 @@ def users_management():
             
             // Load users
             async function loadUsers(search = '') {
-                const url = `/users/?company_id=${currentUser.company_id}&search=${search}`;
+                // SystemAdmin sees all users, company users see only their company
+                const companyFilter = currentUser.company_id ? `company_id=${currentUser.company_id}&` : '';
+                const url = `/users/?${companyFilter}search=${search}`;
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1071,7 +1075,9 @@ def documents_management():
             
             // Load documents
             async function loadDocuments(search = '') {
-                const url = `/documents/?company_id=${currentUser.company_id}&search=${search}`;
+                // SystemAdmin sees all documents
+                const companyFilter = currentUser.company_id ? `company_id=${currentUser.company_id}&` : '';
+                const url = `/documents/?${companyFilter}search=${search}`;
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -3367,6 +3373,334 @@ def analytics_dashboard():
             
             // Initialize
             loadAnalytics();
+        </script>
+    </body>
+    </html>
+    """
+
+
+@router.get("/settings", response_class=HTMLResponse)
+def settings_page():
+    """User Settings Page with Notification Preferences"""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - Settings</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .card {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .card h2 { color: #2c3e50; margin-bottom: 20px; font-size: 18px; }
+            .setting-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .setting-item:last-child { border-bottom: none; }
+            .setting-info h4 { color: #2c3e50; margin-bottom: 5px; }
+            .setting-info p { color: #666; font-size: 14px; }
+            .toggle {
+                position: relative;
+                width: 50px;
+                height: 26px;
+            }
+            .toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .toggle-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: #ccc;
+                transition: .3s;
+                border-radius: 26px;
+            }
+            .toggle-slider:before {
+                position: absolute;
+                content: "";
+                height: 20px;
+                width: 20px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .3s;
+                border-radius: 50%;
+            }
+            .toggle input:checked + .toggle-slider {
+                background-color: #667eea;
+            }
+            .toggle input:checked + .toggle-slider:before {
+                transform: translateX(24px);
+            }
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .btn-primary { background: #667eea; color: white; }
+            .btn-secondary { background: #e0e0e0; color: #333; }
+            .btn-success { background: #27ae60; color: white; }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .user-avatar {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+            }
+            .user-details h3 { color: #2c3e50; }
+            .user-details p { color: #666; font-size: 14px; }
+            .actions { margin-top: 20px; display: flex; gap: 10px; }
+            .success-msg {
+                background: #d4edda;
+                color: #155724;
+                padding: 10px 15px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>⚙️ Settings</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">← Back to Dashboard</button>
+        </div>
+        
+        <div class="container">
+            <div id="successMsg" class="success-msg">Settings saved successfully!</div>
+            
+            <!-- User Profile -->
+            <div class="card">
+                <h2>👤 Profile</h2>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-details">
+                        <h3 id="userName">Loading...</h3>
+                        <p id="userEmail">Loading...</p>
+                        <p id="userCompany" style="color: #667eea;"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notification Preferences -->
+            <div class="card">
+                <h2>🔔 Email Notifications</h2>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Document Processing</h4>
+                        <p>Get notified when your documents are processed</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="pref_document" onchange="savePreferences()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>New Case Studies</h4>
+                        <p>Get notified when new case studies are added</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="pref_case" onchange="savePreferences()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Weekly Digest</h4>
+                        <p>Receive a weekly summary of activity</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="pref_digest" onchange="savePreferences()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h4>Onboarding Reminders</h4>
+                        <p>Get reminders about incomplete onboarding</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="pref_onboarding" onchange="savePreferences()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Test Actions -->
+            <div class="card">
+                <h2>🧪 Test Notifications</h2>
+                <p style="color: #666; margin-bottom: 20px;">Send test emails to verify your notification settings.</p>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="sendTestEmail()">Send Test Email</button>
+                    <button class="btn btn-success" onclick="sendDigest()">Send Weekly Digest</button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                window.location.href = '/auth/login-page';
+            }
+            
+            // Load user info
+            async function loadUserInfo() {
+                try {
+                    const response = await fetch('/auth/me', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const user = await response.json();
+                        document.getElementById('userName').textContent = user.name;
+                        document.getElementById('userEmail').textContent = user.email;
+                        document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+                        if (user.company_id) {
+                            document.getElementById('userCompany').textContent = 'Company ID: ' + user.company_id;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading user:', error);
+                }
+            }
+            
+            // Load preferences
+            async function loadPreferences() {
+                try {
+                    const response = await fetch('/notifications/preferences', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const prefs = await response.json();
+                        document.getElementById('pref_document').checked = prefs.email_on_document_processed;
+                        document.getElementById('pref_case').checked = prefs.email_on_new_case;
+                        document.getElementById('pref_digest').checked = prefs.email_weekly_digest;
+                        document.getElementById('pref_onboarding').checked = prefs.email_onboarding_reminders;
+                    }
+                } catch (error) {
+                    console.error('Error loading preferences:', error);
+                }
+            }
+            
+            // Save preferences
+            async function savePreferences() {
+                try {
+                    const response = await fetch('/notifications/preferences', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            email_on_document_processed: document.getElementById('pref_document').checked,
+                            email_on_new_case: document.getElementById('pref_case').checked,
+                            email_weekly_digest: document.getElementById('pref_digest').checked,
+                            email_onboarding_reminders: document.getElementById('pref_onboarding').checked
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        showSuccess();
+                    }
+                } catch (error) {
+                    console.error('Error saving preferences:', error);
+                }
+            }
+            
+            function showSuccess() {
+                const msg = document.getElementById('successMsg');
+                msg.style.display = 'block';
+                setTimeout(() => { msg.style.display = 'none'; }, 3000);
+            }
+            
+            // Send test email
+            async function sendTestEmail() {
+                try {
+                    const response = await fetch('/notifications/test-email', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        alert('Test email sent! Check your inbox.');
+                    } else {
+                        alert('Failed to send test email');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+            
+            // Send weekly digest
+            async function sendDigest() {
+                try {
+                    const response = await fetch('/notifications/send-digest', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        alert('Weekly digest sent! Stats: ' + JSON.stringify(data.stats));
+                    } else {
+                        alert('Failed to send digest');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+            
+            // Initialize
+            loadUserInfo();
+            loadPreferences();
         </script>
     </body>
     </html>

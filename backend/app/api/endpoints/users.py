@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from typing import Optional
 from app.core.database import get_db
 from app.core.security import get_password_hash, create_access_token
-from app.models.models import User, Company, Role, ActivityLog
+from app.models.models import User, Company, Role, ActivityLog, SystemAdmin
 from app.schemas.users import (
     UserCreate, UserUpdate, UserInvite, UserResponse, 
     UserListResponse, RoleResponse
@@ -109,9 +109,15 @@ def list_users(
     """
     query = db.query(User)
     
-    # Filter by company if specified
-    if company_id:
+    # Handle SystemAdmin - can see all users or filter by company
+    if isinstance(current_user, SystemAdmin):
+        if company_id:
+            query = query.filter(User.company_id == company_id)
+        # else: show all users
+    elif company_id:
         query = query.filter(User.company_id == company_id)
+    else:
+        query = query.filter(User.company_id == current_user.company_id)
     
     # Search by name or email
     if search:

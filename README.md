@@ -1,103 +1,83 @@
-# 🎓 Docent - Knowledge Retention Platform
-
-![Progress](https://img.shields.io/badge/Progress-33%25-blue)
-![Day](https://img.shields.io/badge/Day-10%20of%2030-green)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+# Docent - Knowledge Retention Platform
 
 ## Overview
-
 AI-powered multi-tenant SaaS for SME knowledge management, onboarding, and semantic search.
 
-**Live Demo**: [https://docent.hexoplus.ir](https://docent.hexoplus.ir)
+**Live URL**: https://docent.hexoplus.ir  
+**Progress**: Day 18/30 (60% Complete)
 
 ## Tech Stack
+- **Backend**: FastAPI (Python 3.11)
+- **Database**: PostgreSQL 15
+- **Vector DB**: ChromaDB
+- **AI**: Google Gemini (embeddings)
+- **Deployment**: Docker Compose + Nginx + SSL
 
-| Component | Technology |
-|-----------|------------|
-| Backend | FastAPI (Python 3.11) |
-| Database | PostgreSQL 15 |
-| Vector DB | ChromaDB |
-| AI/Embeddings | Google Gemini |
-| Frontend | Vanilla JS (embedded) |
-| Deploy | Docker Compose + Nginx + SSL |
+## Features Completed
 
-## 📊 Development Progress (10/30 Days)
+### Days 1-7: Foundation
+- ✅ Infrastructure & SSL setup
+- ✅ Database schema (12 tables)
+- ✅ JWT Authentication
+- ✅ User Management & Roles
+- ✅ Document Upload (PDF, DOCX, PPTX, XLSX, TXT)
+- ✅ Document Processing Pipeline
 
-### ✅ Completed
+### Days 8-11: AI Search
+- ✅ Semantic search with embeddings
+- ✅ Vector similarity search
+- ✅ Search history tracking
+- ✅ Search UI with results
 
-| Day | Phase | Features |
-|-----|-------|----------|
-| 1-2 | Infrastructure | VPS, Docker, SSL, Nginx, Domain |
-| 3 | Database | PostgreSQL, 12 tables, SQLAlchemy models |
-| 4 | Authentication | JWT tokens, login/logout, protected routes |
-| 5 | User Management | CRUD, roles, invites, email integration |
-| 6 | Document Upload | Single/multi upload, 50MB limit, drag & drop |
-| 7 | Document Processing | Parse, chunk, embed, vector storage |
-| 8 | AI Search | Semantic search, Gemini embeddings |
-| 9 | Search UI | Search page, highlighting, history |
-| **10** | **Search Filters** | **File type filters, smart snippets, date range** |
+### Days 12-14: Onboarding System
+- ✅ Onboarding path creation
+- ✅ Step-by-step progress tracking
+- ✅ User onboarding assignment
+- ✅ Progress visualization
 
-### �� Coming Up
+### Days 15-16: Case Studies & Analytics
+- ✅ Case study templates
+- ✅ Case study creation & management
+- ✅ Analytics dashboard
+- ✅ Search & document analytics
+- ✅ User engagement metrics
 
-| Day | Phase | Planned Features |
-|-----|-------|------------------|
-| 11 | Search Polish | Dashboard widget, UX improvements |
-| 12-14 | Onboarding | Paths, chat interface, progress tracking |
-| 15-17 | Case Studies | Templates, AI generation, export |
-| 18-30 | Integrations & Polish | Google Drive, admin panels, testing |
+### Days 17-18: Activity & Notifications
+- ✅ Activity logging (logins, uploads, searches)
+- ✅ Email notification templates
+- ✅ Notification preferences
+- ✅ Weekly digest emails
+- ✅ Settings page
 
-## 🔍 Search API
+## API Endpoints (30+)
+- `/auth/*` - Authentication
+- `/users/*` - User management
+- `/documents/*` - Document CRUD
+- `/processing/*` - Document processing
+- `/search/*` - Semantic search
+- `/onboarding/*` - Onboarding paths
+- `/cases/*` - Case studies
+- `/analytics/*` - Analytics & reporting
+- `/notifications/*` - Email preferences
+
+## Quick Start
 ```bash
-# Semantic search with filters
-POST /search/
-{
-  "query": "remote work policy",
-  "top_k": 5,
-  "file_type": "pdf",        # Optional filter
-  "date_from": "2024-01-01"  # Optional filter
-}
-
-# Get available filters
-GET /search/filters
-
-# Search history
-GET /search/history
+cd /opt/docent
+docker-compose up -d
 ```
 
-## 🏗️ Architecture
-```
-User → Nginx (SSL:443) → FastAPI (:8000)
-                              ↓
-                     PostgreSQL (:5432)
-                              ↓
-                     ChromaDB (vectors)
-                              ↓
-                  Gemini API (embeddings)
-```
+## Test Accounts
+- **System Admin**: hamed.niavand@gmail.com / admin123
+- **Company Admin**: admin@democorp.com / admin123
 
-## 📁 Key Pages
+## Server Info
+- IP: 77.221.143.47
+- Location: /opt/docent
+- Domain: docent.hexoplus.ir
 
-- `/auth/login-page` - Login
-- `/dashboard` - Main dashboard
-- `/search-page` - AI Search
-- `/documents-management` - Document management
-- `/users-management` - User management
-
-## 🔌 API Endpoints (24 Total)
-
-| Category | Endpoints |
-|----------|-----------|
-| Auth | POST /auth/login, GET /auth/me |
-| Users | CRUD /users/, POST /users/invite |
-| Documents | POST /documents/upload, GET /documents/ |
-| Processing | POST /processing/process/{id} |
-| **Search** | **POST /search/, GET /search/filters, GET /search/history** |
-
-## 🔐 Test Credentials
-```
-Company Admin: admin@democorp.com / admin123
-```
-
----
-
-**Last Updated**: December 2024 | **Day 10 of 30** | **33% Complete**
+## Next Steps (Days 19-30)
+- [ ] Real-time notifications
+- [ ] Mobile responsiveness
+- [ ] Advanced search filters
+- [ ] Performance optimization
+- [ ] Production hardening
