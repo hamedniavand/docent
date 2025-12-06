@@ -428,3 +428,48 @@ async def create_backup(
             return {"success": False, "message": result.stderr}
     except Exception as e:
         return {"success": False, "message": str(e)}
+
+
+@router.get("/system-status")
+def get_system_status(
+    current_user = Depends(require_system_admin)
+):
+    """Get detailed system status (System Admin only)"""
+    import os
+    import psutil
+    from datetime import datetime
+    
+    status = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "system": {},
+        "docker": {},
+        "database": {}
+    }
+    
+    # System metrics
+    try:
+        status["system"]["cpu_percent"] = psutil.cpu_percent()
+        status["system"]["memory_percent"] = psutil.virtual_memory().percent
+        status["system"]["disk_percent"] = psutil.disk_usage("/").percent
+        status["system"]["disk_free_gb"] = round(psutil.disk_usage("/").free / (1024**3), 2)
+    except:
+        status["system"]["error"] = "Could not get system metrics"
+    
+    # Database stats
+    try:
+        from app.core.database import engine
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            # Table counts
+            result = conn.execute(text("SELECT COUNT(*) FROM users"))
+            status["database"]["users"] = result.scalar()
+            result = conn.execute(text("SELECT COUNT(*) FROM documents"))
+            status["database"]["documents"] = result.scalar()
+            result = conn.execute(text("SELECT COUNT(*) FROM doc_chunks"))
+            status["database"]["chunks"] = result.scalar()
+            result = conn.execute(text("SELECT COUNT(*) FROM activity_logs"))
+            status["database"]["activity_logs"] = result.scalar()
+    except Exception as e:
+        status["database"]["error"] = str(e)
+    
+    return status
