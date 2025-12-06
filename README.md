@@ -4,7 +4,7 @@
 AI-powered multi-tenant SaaS for SME knowledge management, onboarding, and semantic search.
 
 **Live URL**: https://docent.hexoplus.ir  
-**Progress**: Day 18/30 (60% Complete)
+**Progress**: Day 22/30 (73% Complete)
 
 ## Tech Stack
 - **Backend**: FastAPI (Python 3.11)
@@ -15,50 +15,57 @@ AI-powered multi-tenant SaaS for SME knowledge management, onboarding, and seman
 
 ## Features Completed
 
-### Days 1-7: Foundation
-- ✅ Infrastructure & SSL setup
-- ✅ Database schema (12 tables)
-- ✅ JWT Authentication
+### Core Features
+- ✅ JWT Authentication & Authorization
+- ✅ Multi-tenant Company Management
 - ✅ User Management & Roles
 - ✅ Document Upload (PDF, DOCX, PPTX, XLSX, TXT)
-- ✅ Document Processing Pipeline
+- ✅ Document Processing & Text Extraction
+- ✅ AI-Powered Semantic Search
+- ✅ Search History & Analytics
 
-### Days 8-11: AI Search
-- ✅ Semantic search with embeddings
-- ✅ Vector similarity search
-- ✅ Search history tracking
-- ✅ Search UI with results
+### Knowledge Management
+- ✅ Case Studies with Templates
+- ✅ Onboarding Paths & Progress Tracking
+- ✅ Document Preview
+- ✅ CSV Export for Analytics
 
-### Days 12-14: Onboarding System
-- ✅ Onboarding path creation
-- ✅ Step-by-step progress tracking
-- ✅ User onboarding assignment
-- ✅ Progress visualization
+### Analytics & Monitoring
+- ✅ Activity Logging
+- ✅ Search Analytics Dashboard
+- ✅ User Engagement Metrics
+- ✅ Document Statistics
 
-### Days 15-16: Case Studies & Analytics
-- ✅ Case study templates
-- ✅ Case study creation & management
-- ✅ Analytics dashboard
-- ✅ Search & document analytics
-- ✅ User engagement metrics
+### Notifications
+- ✅ Email Notification System
+- ✅ Notification Preferences
+- ✅ Weekly Digest Emails
 
-### Days 17-18: Activity & Notifications
-- ✅ Activity logging (logins, uploads, searches)
-- ✅ Email notification templates
-- ✅ Notification preferences
-- ✅ Weekly digest emails
-- ✅ Settings page
+### Security & Performance
+- ✅ Rate Limiting (Login Protection)
+- ✅ Input Sanitization
+- ✅ Security Headers (XSS, CSRF)
+- ✅ Global Error Handling
+- ✅ GZip Compression
+- ✅ In-Memory Caching
+- ✅ Request Logging
 
-## API Endpoints (30+)
+### UI/UX
+- ✅ Mobile Responsive Design
+- ✅ Toast Notifications
+- ✅ Keyboard Shortcuts
+- ✅ Help & Documentation Page
+
+## API Endpoints (35+)
 - `/auth/*` - Authentication
-- `/users/*` - User management
+- `/users/*` - User Management
 - `/documents/*` - Document CRUD
-- `/processing/*` - Document processing
-- `/search/*` - Semantic search
-- `/onboarding/*` - Onboarding paths
-- `/cases/*` - Case studies
-- `/analytics/*` - Analytics & reporting
-- `/notifications/*` - Email preferences
+- `/processing/*` - Document Processing
+- `/search/*` - Semantic Search
+- `/onboarding/*` - Onboarding Paths
+- `/cases/*` - Case Studies
+- `/analytics/*` - Analytics & Reporting
+- `/notifications/*` - Email Preferences
 
 ## Quick Start
 ```bash
@@ -70,12 +77,34 @@ docker-compose up -d
 - **Email**: admin@democorp.com
 - **Password**: admin123
 
-## Server Info
-- Domain: docent.hexoplus.ir
+## Keyboard Shortcuts
+- `Ctrl+K` - Open Search
+- `Ctrl+U` - Upload Document
+- `Esc` - Close Modal
 
-## Next Steps (Days 19-30)
-- [ ] Real-time notifications
-- [ ] Mobile responsiveness
-- [ ] Advanced search filters
-- [ ] Performance optimization
-- [ ] Production hardening
+## Project Structure
+```
+/opt/docent/
+├── backend/
+│   ├── app/
+│   │   ├── api/endpoints/    # API routes
+│   │   ├── core/             # Config, DB, Security
+│   │   ├── models/           # SQLAlchemy models
+│   │   ├── schemas/          # Pydantic schemas
+│   │   ├── services/         # Business logic
+│   │   └── utils/            # Helpers
+│   ├── requirements.txt
+│   └── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
+
+## Remaining (Days 23-30)
+- [ ] Comprehensive Testing
+- [ ] Bug Fixes
+- [ ] Documentation
+- [ ] Production Hardening
+- [ ] Final Polish
+
+## License
+MIT
