@@ -1,13 +1,13 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
-from app.api.endpoints import auth, pages, users, documents, processing
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException, cases, search, onboarding, analytics, notifications
-
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.core.config import settings
+from app.api.endpoints import auth, pages, users, documents, processing, cases, search, onboarding, analytics, notifications
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(
@@ -61,8 +61,6 @@ app.add_middleware(
 )
 
 # Security headers middleware
-from starlette.middleware.base import BaseHTTPMiddleware
-
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         response = await call_next(request)
@@ -75,18 +73,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Request logging middleware
-import time
-
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         start_time = time.time()
         response = await call_next(request)
         duration = time.time() - start_time
-        
-        # Log slow requests (>2 seconds)
         if duration > 2.0:
             logger.warning(f"Slow request: {request.method} {request.url.path} took {duration:.2f}s")
-        
         return response
 
 app.add_middleware(RequestLoggingMiddleware)
@@ -98,90 +91,14 @@ app.include_router(users.router)
 app.include_router(documents.router)
 app.include_router(processing.router)
 app.include_router(cases.router)
-app.include_router(analytics.router)
-app.include_router(notifications.router)
 app.include_router(search.router)
 app.include_router(onboarding.router)
-
+app.include_router(analytics.router)
+app.include_router(notifications.router)
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "docent"}
-
-# Root endpoint
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Docent - Knowledge Retention Platform</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 50px auto;
-                padding: 20px;
-                background: #f5f5f5;
-            }
-            .container {
-                background: white;
-                padding: 40px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            h1 { color: #2c3e50; }
-            .status { color: #27ae60; font-weight: bold; }
-            .info { margin: 20px 0; line-height: 1.6; }
-            .endpoint { 
-                background: #ecf0f1;
-                padding: 10px;
-                border-radius: 4px;
-                margin: 10px 0;
-                font-family: monospace;
-            }
-            .btn {
-                display: inline-block;
-                padding: 12px 24px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                margin-top: 20px;
-                font-weight: 600;
-            }
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🎓 Docent</h1>
-            <p class="status">✓ System Online</p>
-            <div class="info">
-                <p><strong>Knowledge Retention Platform</strong></p>
-                <p>Version: 0.1.0 (MVP Development)</p>
-                <p>Environment: Production</p>
-            </div>
-            <h3>Available Endpoints:</h3>
-            <div class="endpoint">GET /health - Health check</div>
-            <div class="endpoint">GET /docs - API documentation</div>
-            <div class="endpoint">GET /auth/login-page - Login page</div>
-            <div class="endpoint">POST /auth/login - Login API</div>
-            <div class="endpoint">GET /auth/me - Current user info</div>
-            <div class="endpoint">GET /dashboard - User dashboard</div>
-            
-            <a href="/auth/login-page" class="btn">Go to Login →</a>
-            
-            <p style="margin-top: 30px; color: #7f8c8d; font-size: 14px;">
-                Day 4: Authentication system complete ✓
-            </p>
-        </div>
-    </body>
-    </html>
-    """
 
 logger.info(f"Docent API initialized - Environment: {settings.ENVIRONMENT}")
