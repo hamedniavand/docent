@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Form, Request
+from app.api.middleware.rate_limit import check_rate_limit, rate_limiter
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -15,8 +16,14 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/login", response_model=LoginResponse)
 def login(
     login_data: LoginRequest,
+    request: Request,
     db: Session = Depends(get_db)
 ):
+    # Rate limit: 5 login attempts per minute per IP
+    client_ip = request.client.host if request.client else "unknown"
+    if not rate_limiter.is_allowed(f"login:{client_ip}", max_requests=5, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please wait.")
+
     """
     Login endpoint - returns JWT token
     """
