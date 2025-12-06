@@ -6,6 +6,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from app.core.config import settings
+from app.core.startup import startup_checks
 from app.api.endpoints import auth, pages, users, documents, processing, cases, search, onboarding, analytics, notifications
 import logging
 import time
@@ -100,9 +101,48 @@ app.include_router(onboarding.router)
 app.include_router(analytics.router)
 app.include_router(notifications.router)
 
+# Startup event
+@app.on_event("startup")
+async def on_startup():
+    startup_checks()
+
+# Shutdown event
+@app.on_event("shutdown")
+async def on_shutdown():
+    logger.info("Shutting down Docent API...")
+    # Close database connections
+    from app.core.database import engine
+    engine.dispose()
+    logger.info("Database connections closed")
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "docent"}
+    from app.core.database import engine
+    from sqlalchemy import text
+    import os
+    
+    status = {"status": "healthy", "service": "docent", "checks": {}}
+    
+    # Database check
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        status["checks"]["database"] = "ok"
+    except Exception as e:
+        status["checks"]["database"] = "error"
+        status["status"] = "degraded"
+    
+    # Disk space check
+    try:
+        stat = os.statvfs("/")
+        free_gb = (stat.f_bavail * stat.f_frsize) / (1024**3)
+        status["checks"]["disk_free_gb"] = round(free_gb, 2)
+        if free_gb < 1:
+            status["status"] = "warning"
+    except:
+        status["checks"]["disk"] = "unknown"
+    
+    return status
 
 logger.info(f"Docent API initialized - Environment: {settings.ENVIRONMENT}")
