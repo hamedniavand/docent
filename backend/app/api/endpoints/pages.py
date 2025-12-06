@@ -2132,20 +2132,10 @@ def onboarding_view(path_id: int):
                 font-size: 14px;
                 font-weight: 600;
             }
-            .btn-primary {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-            }
             .btn-secondary {
                 background: #e0e0e0;
                 color: #333;
             }
-            .btn-success {
-                background: #27ae60;
-                color: white;
-            }
-            
-            /* Progress Header */
             .progress-header {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 padding: 30px;
@@ -2153,9 +2143,7 @@ def onboarding_view(path_id: int):
                 color: white;
                 margin-bottom: 30px;
             }
-            .progress-header h2 {
-                margin-bottom: 15px;
-            }
+            .progress-header h2 { margin-bottom: 15px; }
             .progress-bar-container {
                 background: rgba(255,255,255,0.3);
                 height: 10px;
@@ -2173,8 +2161,6 @@ def onboarding_view(path_id: int):
                 font-size: 14px;
                 opacity: 0.9;
             }
-            
-            /* Steps */
             .steps-container {
                 background: white;
                 border-radius: 12px;
@@ -2188,15 +2174,9 @@ def onboarding_view(path_id: int):
                 gap: 20px;
                 transition: background 0.2s;
             }
-            .step-item:last-child {
-                border-bottom: none;
-            }
-            .step-item.active {
-                background: #f8f9ff;
-            }
-            .step-item.completed {
-                background: #f0fff4;
-            }
+            .step-item:last-child { border-bottom: none; }
+            .step-item.active { background: #f8f9ff; }
+            .step-item.completed { background: #f0fff4; }
             .step-number {
                 width: 40px;
                 height: 40px;
@@ -2209,17 +2189,9 @@ def onboarding_view(path_id: int):
                 color: #666;
                 flex-shrink: 0;
             }
-            .step-item.active .step-number {
-                background: #667eea;
-                color: white;
-            }
-            .step-item.completed .step-number {
-                background: #27ae60;
-                color: white;
-            }
-            .step-content {
-                flex: 1;
-            }
+            .step-item.active .step-number { background: #667eea; color: white; }
+            .step-item.completed .step-number { background: #27ae60; color: white; }
+            .step-content { flex: 1; }
             .step-title {
                 font-size: 18px;
                 font-weight: 600;
@@ -2230,10 +2202,6 @@ def onboarding_view(path_id: int):
                 color: #666;
                 line-height: 1.6;
                 margin-bottom: 15px;
-            }
-            .step-actions {
-                display: flex;
-                gap: 10px;
             }
             .checkbox-label {
                 display: flex;
@@ -2248,8 +2216,6 @@ def onboarding_view(path_id: int):
                 height: 20px;
                 cursor: pointer;
             }
-            
-            /* Completion */
             .completion-card {
                 background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
                 padding: 40px;
@@ -2258,13 +2224,6 @@ def onboarding_view(path_id: int):
                 text-align: center;
                 margin-top: 30px;
             }
-            .completion-card h2 {
-                margin-bottom: 10px;
-            }
-            .completion-card p {
-                opacity: 0.9;
-            }
-            
             .loading {
                 text-align: center;
                 padding: 60px;
@@ -2279,55 +2238,40 @@ def onboarding_view(path_id: int):
                 ← Back to Paths
             </button>
         </div>
-        
         <div class="container">
             <div id="content">
                 <div class="loading">Loading onboarding path...</div>
             </div>
         </div>
-        
         <script>
             const token = localStorage.getItem('access_token');
-            if (!token) {
-                window.location.href = '/auth/login-page';
-            }
+            if (!token) window.location.href = '/auth/login-page';
             
-            // Get path ID from URL
             const pathId = window.location.pathname.split('/').pop();
             let currentPath = null;
             let userProgress = null;
             
             async function loadPath() {
                 try {
-                    // Load path details
-                    const pathResponse = await fetch(`/onboarding/paths/${pathId}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
+                    const pathResponse = await fetch('/onboarding/paths/' + pathId, {
+                        headers: { 'Authorization': 'Bearer ' + token }
                     });
-                    
                     if (!pathResponse.ok) {
                         document.getElementById('content').innerHTML = '<div class="loading">Path not found</div>';
                         return;
                     }
-                    
                     currentPath = await pathResponse.json();
                     
-                    // Load or create progress
                     const progressResponse = await fetch('/onboarding/progress/me', {
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        headers: { 'Authorization': 'Bearer ' + token }
                     });
-                    
                     if (progressResponse.ok) {
                         const progressList = await progressResponse.json();
-                        userProgress = progressList.find(p => p.path_id === parseInt(pathId));
+                        userProgress = progressList.find(function(p) { return p.path_id === parseInt(pathId); });
                     }
                     
-                    // If no progress, start it
-                    if (!userProgress) {
-                        await startProgress();
-                    }
-                    
+                    if (!userProgress) await startProgress();
                     renderOnboarding();
-                    
                 } catch (error) {
                     console.error('Error:', error);
                     document.getElementById('content').innerHTML = '<div class="loading">Error loading onboarding</div>';
@@ -2336,9 +2280,8 @@ def onboarding_view(path_id: int):
             
             async function startProgress() {
                 try {
-                    // Get current user
                     const meResponse = await fetch('/auth/me', {
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        headers: { 'Authorization': 'Bearer ' + token }
                     });
                     const me = await meResponse.json();
                     
@@ -2346,71 +2289,52 @@ def onboarding_view(path_id: int):
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': 'Bearer ' + token
                         },
                         body: JSON.stringify({
                             path_id: parseInt(pathId),
                             user_id: me.id
                         })
                     });
-                    
-                    if (response.ok) {
-                        userProgress = await response.json();
-                    }
+                    if (response.ok) userProgress = await response.json();
                 } catch (error) {
                     console.error('Error starting progress:', error);
                 }
             }
             
             function renderOnboarding() {
-                const steps = currentPath.steps_json?.steps || [];
-                const completedSteps = userProgress?.completed_steps || [];
+                const steps = currentPath.steps_json && currentPath.steps_json.steps ? currentPath.steps_json.steps : [];
+                const completedSteps = userProgress && userProgress.completed_steps ? userProgress.completed_steps : [];
                 const totalSteps = steps.length;
                 const completedCount = completedSteps.length;
                 const percent = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
                 const isComplete = completedCount >= totalSteps;
                 
-                let html = `
-                    <div class="progress-header">
-                        <h2>${currentPath.name}</h2>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: ${percent}%"></div>
-                        </div>
-                        <div class="progress-text">${completedCount} of ${totalSteps} steps completed (${percent}%)</div>
-                    </div>
+                let html = '<div class="progress-header">' +
+                    '<h2>' + currentPath.name + '</h2>' +
+                    '<div class="progress-bar-container"><div class="progress-bar" style="width: ' + percent + '%"></div></div>' +
+                    '<div class="progress-text">' + completedCount + ' of ' + totalSteps + ' steps completed (' + percent + '%)</div>' +
+                    '</div><div class="steps-container">';
+                
+                for (let i = 0; i < steps.length; i++) {
+                    const step = steps[i];
+                    const isCompleted = completedSteps.indexOf(i) !== -1;
+                    const isActive = i === completedCount && !isComplete;
+                    const stepClass = (isCompleted ? 'completed' : '') + ' ' + (isActive ? 'active' : '');
                     
-                    <div class="steps-container">
-                        ${steps.map((step, index) => {
-                            const isCompleted = completedSteps.includes(index);
-                            const isActive = index === completedCount && !isComplete;
-                            return `
-                                <div class="step-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
-                                    <div class="step-number">${isCompleted ? '✓' : index + 1}</div>
-                                    <div class="step-content">
-                                        <div class="step-title">${step.title}</div>
-                                        <div class="step-description">${step.description || 'No description'}</div>
-                                        <div class="step-actions">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" 
-                                                       ${isCompleted ? 'checked' : ''} 
-                                                       onchange="toggleStep(${index}, this.checked)">
-                                                Mark as complete
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                `;
+                    html += '<div class="step-item ' + stepClass + '">' +
+                        '<div class="step-number">' + (isCompleted ? '✓' : (i + 1)) + '</div>' +
+                        '<div class="step-content">' +
+                        '<div class="step-title">' + step.title + '</div>' +
+                        '<div class="step-description">' + (step.description || 'No description') + '</div>' +
+                        '<div class="step-actions"><label class="checkbox-label">' +
+                        '<input type="checkbox" ' + (isCompleted ? 'checked' : '') + ' onchange="toggleStep(' + i + ', this.checked)">' +
+                        ' Mark as complete</label></div></div></div>';
+                }
+                html += '</div>';
                 
                 if (isComplete) {
-                    html += `
-                        <div class="completion-card">
-                            <h2>🎉 Congratulations!</h2>
-                            <p>You have completed this onboarding path.</p>
-                        </div>
-                    `;
+                    html += '<div class="completion-card"><h2>🎉 Congratulations!</h2><p>You have completed this onboarding path.</p></div>';
                 }
                 
                 document.getElementById('content').innerHTML = html;
@@ -2419,23 +2343,25 @@ def onboarding_view(path_id: int):
             async function toggleStep(stepIndex, completed) {
                 if (!userProgress) return;
                 
-                // Optimistic update - immediately update UI
+                // Optimistic update
+                var steps = userProgress.completed_steps ? userProgress.completed_steps.slice() : [];
                 if (completed) {
-                    if (!userProgress.completed_steps.includes(stepIndex)) {
-                        userProgress.completed_steps.push(stepIndex);
-                        userProgress.completed_steps.sort((a, b) => a - b);
+                    if (steps.indexOf(stepIndex) === -1) {
+                        steps.push(stepIndex);
+                        steps.sort(function(a, b) { return a - b; });
                     }
                 } else {
-                    userProgress.completed_steps = userProgress.completed_steps.filter(s => s !== stepIndex);
+                    steps = steps.filter(function(s) { return s !== stepIndex; });
                 }
+                userProgress.completed_steps = steps;
                 renderOnboarding();
                 
                 try {
-                    const response = await fetch(`/onboarding/progress/${userProgress.id}/step`, {
+                    const response = await fetch('/onboarding/progress/' + userProgress.id + '/step', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': 'Bearer ' + token
                         },
                         body: JSON.stringify({
                             step_index: stepIndex,
@@ -2450,12 +2376,10 @@ def onboarding_view(path_id: int):
                     }
                 } catch (error) {
                     console.error('Error updating step:', error);
-                    // Revert on error
                     loadPath();
                 }
             }
             
-            // Initialize
             loadPath();
         </script>
     </body>

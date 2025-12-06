@@ -236,7 +236,8 @@ def update_step_progress(
     if not isinstance(current_user, SystemAdmin) and progress.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    completed = progress.completed_steps or []
+    # Create a NEW list to ensure SQLAlchemy detects the change
+    completed = list(progress.completed_steps or [])
     
     if data.completed and data.step_index not in completed:
         completed.append(data.step_index)
@@ -244,7 +245,8 @@ def update_step_progress(
     elif not data.completed and data.step_index in completed:
         completed.remove(data.step_index)
     
-    progress.completed_steps = completed
+    # Assign a new list object to trigger SQLAlchemy change detection
+    progress.completed_steps = list(completed)
     progress.current_step = max(completed) + 1 if completed else 0
     
     path = db.query(OnboardingPath).filter(OnboardingPath.id == progress.path_id).first()
