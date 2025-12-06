@@ -66,13 +66,11 @@ cd /opt/docent
 docker-compose up -d
 ```
 
-## Test Accounts
-- **System Admin**: hamed.niavand@gmail.com / admin123
-- **Company Admin**: admin@democorp.com / admin123
+## Demo Account
+- **Email**: admin@democorp.com
+- **Password**: admin123
 
 ## Server Info
-- IP: 77.221.143.47
-- Location: /opt/docent
 - Domain: docent.hexoplus.ir
 
 ## Next Steps (Days 19-30)

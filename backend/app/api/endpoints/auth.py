@@ -271,7 +271,7 @@ def login_page():
             
             <div class="demo-creds">
                 <strong>Demo Credentials:</strong><br>
-                Email: hamed.niavand@gmail.com<br>
+                Email: admin@democorp.com<br>
                 Password: admin123
             </div>
         </div>
