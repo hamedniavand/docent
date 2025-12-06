@@ -1,117 +1,73 @@
-# Docent - Knowledge Retention Platform
+# 🎓 Docent - Knowledge Retention Platform
 
-## Overview
-AI-powered multi-tenant SaaS for SME knowledge management, onboarding, and semantic search.
+[![Status](https://img.shields.io/badge/Status-Production-success)](https://docent.hexoplus.ir)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue)]()
+[![License](https://img.shields.io/badge/License-MIT-green)]()
 
-**Live URL**: https://docent.hexoplus.ir  
-**Progress**: Day 22/30 (73% Complete)
+**AI-powered knowledge retention platform for SMEs**
 
-## Tech Stack
-- **Backend**: FastAPI (Python 3.11)
-- **Database**: PostgreSQL 15
-- **Vector DB**: ChromaDB
-- **AI**: Google Gemini (embeddings)
-- **Deployment**: Docker Compose + Nginx + SSL
+🌐 **Live**: [https://docent.hexoplus.ir](https://docent.hexoplus.ir)
 
-## Features Completed
+## ✨ Features
 
-### Core Features
-- ✅ JWT Authentication & Authorization
-- ✅ Multi-tenant Company Management
-- ✅ User Management & Roles
-- ✅ Document Upload (PDF, DOCX, PPTX, XLSX, TXT)
-- ✅ Document Processing & Text Extraction
-- ✅ AI-Powered Semantic Search
-- ✅ Search History & Analytics
+| Feature | Description |
+|---------|-------------|
+| 📄 Document Management | Upload PDF, DOCX, PPTX, XLSX, TXT (50MB max) |
+| 🔍 AI Search | Semantic search with embeddings |
+| 📋 Case Studies | Template-based knowledge capture |
+| 🎓 Onboarding | Learning paths with progress tracking |
+| 📊 Analytics | Search trends, user engagement |
+| 🔔 Notifications | Email alerts & weekly digests |
+| 🔒 Security | Rate limiting, JWT auth, role-based access |
 
-### Knowledge Management
-- ✅ Case Studies with Templates
-- ✅ Onboarding Paths & Progress Tracking
-- ✅ Document Preview
-- ✅ CSV Export for Analytics
-
-### Analytics & Monitoring
-- ✅ Activity Logging
-- ✅ Search Analytics Dashboard
-- ✅ User Engagement Metrics
-- ✅ Document Statistics
-
-### Notifications
-- ✅ Email Notification System
-- ✅ Notification Preferences
-- ✅ Weekly Digest Emails
-
-### Security & Performance
-- ✅ Rate Limiting (Login Protection)
-- ✅ Input Sanitization
-- ✅ Security Headers (XSS, CSRF)
-- ✅ Global Error Handling
-- ✅ GZip Compression
-- ✅ In-Memory Caching
-- ✅ Request Logging
-
-### UI/UX
-- ✅ Mobile Responsive Design
-- ✅ Toast Notifications
-- ✅ Keyboard Shortcuts
-- ✅ Help & Documentation Page
-
-## API Endpoints (35+)
-- `/auth/*` - Authentication
-- `/users/*` - User Management
-- `/documents/*` - Document CRUD
-- `/processing/*` - Document Processing
-- `/search/*` - Semantic Search
-- `/onboarding/*` - Onboarding Paths
-- `/cases/*` - Case Studies
-- `/analytics/*` - Analytics & Reporting
-- `/notifications/*` - Email Preferences
-
-## Quick Start
+## 🚀 Quick Start
 ```bash
-cd /opt/docent
+git clone https://github.com/hamedniavand/docent.git
+cd docent
+cp .env.example .env  # Configure environment
 docker-compose up -d
 ```
 
-## Demo Account
+## 🔑 Demo Access
+
+- **URL**: https://docent.hexoplus.ir
 - **Email**: admin@democorp.com
 - **Password**: admin123
 
-## Keyboard Shortcuts
-- `Ctrl+K` - Open Search
-- `Ctrl+U` - Upload Document
-- `Esc` - Close Modal
+## ⌨️ Keyboard Shortcuts
 
-## Project Structure
-```
-/opt/docent/
-├── backend/
-│   ├── app/
-│   │   ├── api/endpoints/    # API routes
-│   │   ├── core/             # Config, DB, Security
-│   │   ├── models/           # SQLAlchemy models
-│   │   ├── schemas/          # Pydantic schemas
-│   │   ├── services/         # Business logic
-│   │   └── utils/            # Helpers
-│   ├── requirements.txt
-│   └── Dockerfile
-├── docker-compose.yml
-└── README.md
-```
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+K` | Search |
+| `Ctrl+U` | Upload |
+| `Esc` | Close modal |
 
-## Remaining (Days 23-30)
-- [ ] Comprehensive Testing
-- [ ] Bug Fixes
-- [ ] Documentation
-- [ ] Production Hardening
-- [ ] Final Polish
+## 📚 Documentation
 
-
-
-## Documentation
 - [API Reference](docs/API_REFERENCE.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
+- [Release Notes](docs/RELEASE_NOTES.md)
 - [Changelog](docs/CHANGELOG.md)
 
-## License
-MIT
+## 🛠️ Tech Stack
+
+- **Backend**: FastAPI (Python 3.11)
+- **Database**: PostgreSQL 15
+- **Vector DB**: ChromaDB
+- **AI**: Google Gemini Embeddings
+- **Server**: Docker + Nginx + SSL
+
+## 📈 Project Stats
+
+- **Development**: 30 days
+- **API Endpoints**: 35+
+- **Database Tables**: 12
+- **Test Coverage**: 29/29 ✅
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+Built with ❤️ by the Docent Team
