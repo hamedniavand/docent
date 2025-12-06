@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str
     EMAIL_FROM: str
     
+    # Resend Email
+    RESEND_API_KEY: str = ""
+    
     # Google
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str

@@ -535,6 +535,26 @@ def users_management():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
+            .toast-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+            }
+            .toast {
+                padding: 12px 20px;
+                margin-bottom: 10px;
+                border-radius: 6px;
+                color: white;
+                animation: slideIn 0.3s ease;
+            }
+            .toast.success { background: #27ae60; }
+            .toast.error { background: #e74c3c; }
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
@@ -746,6 +766,21 @@ def users_management():
                 window.location.href = '/auth/login-page';
             }
             
+            // Toast notification
+            function showToast(message, type = 'success', duration = 3000) {
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const toast = document.createElement('div');
+                toast.className = 'toast ' + type;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), duration);
+            }
+            
             // Load current user
             async function loadCurrentUser() {
                 const response = await fetch('/auth/me', {
@@ -860,7 +895,7 @@ def users_management():
                     loadUsers();
                 } else {
                     const error = await response.json();
-                    alert('Error: ' + error.detail);
+                    showToast('Error: ' + (error.detail || 'Unknown error'), 'error');
                 }
             });
             
@@ -2274,7 +2309,7 @@ def onboarding_management():
                         loadPaths();
                     } else {
                         const error = await response.json();
-                        alert('Error: ' + error.detail);
+                        showToast('Error: ' + (error.detail || 'Unknown error'), 'error');
                     }
                 } catch (error) {
                     alert('Error creating path: ' + error.message);
