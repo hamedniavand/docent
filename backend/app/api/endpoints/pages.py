@@ -1097,6 +1097,7 @@ def documents_management():
                                 <td>${date}</td>
                                 <td><span class="badge badge-${doc.status}">${doc.status}</span></td>
                                 <td>
+                                    ${doc.status === 'uploaded' ? `<button class="btn btn-primary" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" onclick="processDocument(${doc.id})">Process</button>` : ''}
                                     <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" 
                                             onclick="downloadDocument(${doc.id}, '${doc.filename}')">Download</button>
                                     <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" 
@@ -1236,6 +1237,28 @@ def documents_management():
             }
             
             // Delete document
+            // Process document
+            async function processDocument(docId) {
+                if (!confirm("Process this document? This will extract text and create searchable chunks.")) return;
+                
+                try {
+                    const response = await fetch(`/processing/process/${docId}`, {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        alert("Processing started! Refresh in a few seconds to see updated status.");
+                        loadDocuments();
+                    } else {
+                        const error = await response.json();
+                        alert("Error: " + (error.detail || "Failed to start processing"));
+                    }
+                } catch (error) {
+                    alert("Error: " + error.message);
+                }
+            }
+
             async function deleteDocument(docId) {
                 if (!confirm('Are you sure you want to delete this document?')) return;
                 

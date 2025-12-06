@@ -1,5 +1,5 @@
 from app.models.models import SystemAdmin
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, BackgroundTasks
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
@@ -11,12 +11,14 @@ from app.schemas.documents import DocumentResponse, DocumentListResponse, Docume
 from app.api.deps.auth import require_active_user
 from app.utils.storage import get_file_storage, validate_file_type, format_file_size
 from datetime import datetime
+from app.services.document_processor import get_document_processor
 from typing import Optional, List 
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user = Depends(require_active_user)
@@ -66,6 +68,18 @@ async def upload_document(
     # Get uploader name
     uploader = db.query(User).filter(User.id == document.uploaded_by).first()
     uploader_name = uploader.name if uploader else "Unknown"
+    
+    # Auto-process document in background
+    def process_task(doc_id=document.id):
+        from app.core.database import SessionLocal
+        db_task = SessionLocal()
+        try:
+            processor = get_document_processor()
+            processor.process_document(doc_id, db_task)
+        finally:
+            db_task.close()
+    
+    background_tasks.add_task(process_task)
     
     return DocumentResponse(
         id=document.id,
