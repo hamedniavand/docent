@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import Optional
@@ -265,6 +265,7 @@ def delete_user(
 @router.post("/invite", status_code=status.HTTP_202_ACCEPTED)
 async def invite_user(
     invite_data: UserInvite,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user = Depends(require_active_user)
 ):
@@ -282,13 +283,10 @@ async def invite_user(
     # Get company_id based on user type
     from app.models.models import SystemAdmin
     if isinstance(current_user, SystemAdmin):
-        # System admin must specify company in invite
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="System admins must use the create user endpoint and specify company_id"
-        )
-    
-    company_id = current_user.company_id
+        # System admin uses default company (Demo Corp = 1)
+        company_id = 1
+    else:
+        company_id = current_user.company_id
     
     # Get company
     company = db.query(Company).filter(Company.id == company_id).first()
@@ -318,17 +316,22 @@ async def invite_user(
         expires_delta=timedelta(days=7)
     )
     
-    # Send invite email
-    try:
-        await send_invite_email(
-            to_email=new_user.email,
-            to_name=new_user.name,
-            company_name=company.name,
-            invite_token=invite_token,
-            custom_message=invite_data.message
-        )
-    except Exception as e:
-        print(f"Failed to send invite email: {e}")
+    # Send invite email in background (non-blocking)
+    def send_email_bg():
+        import asyncio
+        try:
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(send_invite_email(
+                to_email=new_user.email,
+                to_name=new_user.name,
+                company_name=company.name,
+                invite_token=invite_token,
+                custom_message=invite_data.message
+            ))
+        except Exception as e:
+            print(f"Failed to send invite email: {e}")
+    
+    background_tasks.add_task(send_email_bg)
     
     # Log activity
     activity = ActivityLog(
@@ -340,7 +343,7 @@ async def invite_user(
     db.add(activity)
     db.commit()
     
-    return {"message": "Invitation sent successfully", "user_id": new_user.id}
+    return {"message": "User created! Email sending in background.", "user_id": new_user.id}
     
 @router.get("/company/{company_id}/roles", response_model=list[RoleResponse])
 def get_company_roles(
