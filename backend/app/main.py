@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -114,6 +115,11 @@ async def on_shutdown():
     from app.core.database import engine
     engine.dispose()
     logger.info("Database connections closed")
+
+# Favicon
+@app.get("/favicon.ico")
+async def favicon():
+    return {"message": "no favicon"}
 
 # Health check endpoint
 @app.get("/health")
