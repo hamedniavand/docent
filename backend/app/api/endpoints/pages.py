@@ -59,11 +59,33 @@ def dashboard():
     <html>
     <head>
         <title>Docent - Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -453,6 +475,27 @@ def dashboard():
                 window.location.href = '/auth/login-page';
             }
             
+
+            // Toast notification system
+            function showToast(message, type = 'success', duration = 3000) {
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                
+                const toast = document.createElement('div');
+                toast.className = 'toast ' + type;
+                toast.innerHTML = (type === 'success' ? '✓ ' : type === 'error' ? '✕ ' : '⚠ ') + message;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+
             // Initialize
             loadUserInfo();
             loadStats();
@@ -482,11 +525,33 @@ def users_management():
     <html>
     <head>
         <title>Docent - User Management</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -783,7 +848,7 @@ def users_management():
                 });
                 
                 if (response.ok) {
-                    alert('Invitation sent successfully!');
+                    showToast('Invitation sent!', 'success');
                     closeInviteModal();
                     loadUsers();
                 } else {
@@ -837,11 +902,33 @@ def documents_management():
     <html>
     <head>
         <title>Docent - Documents</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -978,7 +1065,7 @@ def documents_management():
             <div class="stats" id="stats">
                 <div class="stat-card">
                     <h3>Total Documents</h3>
-                    <div class="value" id="statTotal">-</div>
+                    <div class="value" id="statTotal"><span class="loading-text">...</span></div>
                 </div>
                 <div class="stat-card">
                     <h3>Total Size</h3>
@@ -1074,10 +1161,11 @@ def documents_management():
             }
             
             // Load documents
-            async function loadDocuments(search = '') {
+            async function loadDocuments(search = '', page = 1) {
+                currentPage = page;
                 // SystemAdmin sees all documents
                 const companyFilter = currentUser.company_id ? `company_id=${currentUser.company_id}&` : '';
-                const url = `/documents/?${companyFilter}search=${search}`;
+                const url = `/documents/?${companyFilter}search=${search}&page=${page}&page_size=10`;
                 const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1114,7 +1202,43 @@ def documents_management():
                             </tr>
                         `;
                     }).join('');
+                    
+                    // Render pagination
+                    renderPagination(data.total, data.page, data.page_size);
                 }
+            }
+            
+            function renderPagination(total, page, pageSize) {
+                totalPages = Math.ceil(total / pageSize);
+                const container = document.getElementById('docsPagination');
+                if (totalPages <= 1) {
+                    container.innerHTML = '';
+                    return;
+                }
+                
+                let html = '';
+                
+                // Previous button
+                html += `<button class="btn btn-secondary" style="padding:5px 15px;" 
+                    ${page <= 1 ? 'disabled' : ''} 
+                    onclick="loadDocuments(document.getElementById('searchBox').value, ${page - 1})">← Prev</button>`;
+                
+                // Page numbers
+                for (let i = 1; i <= totalPages && i <= 5; i++) {
+                    const pageNum = totalPages <= 5 ? i : (page <= 3 ? i : page - 2 + i - 1);
+                    if (pageNum > 0 && pageNum <= totalPages) {
+                        html += `<button class="btn ${pageNum === page ? 'btn-primary' : 'btn-secondary'}" 
+                            style="padding:5px 12px;" 
+                            onclick="loadDocuments(document.getElementById('searchBox').value, ${pageNum})">${pageNum}</button>`;
+                    }
+                }
+                
+                // Next button
+                html += `<button class="btn btn-secondary" style="padding:5px 15px;" 
+                    ${page >= totalPages ? 'disabled' : ''} 
+                    onclick="loadDocuments(document.getElementById('searchBox').value, ${page + 1})">Next →</button>`;
+                
+                container.innerHTML = html;
             }
             
             // Format bytes
@@ -1212,7 +1336,7 @@ def documents_management():
                         loadStats();
                         loadDocuments();
                     } else {
-                        alert('Upload failed. Please try again.');
+                        showToast('Upload failed. Please try again.', 'error');
                         progressDiv.style.display = 'none';
                     }
                 } catch (error) {
@@ -1240,7 +1364,7 @@ def documents_management():
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
                 } else {
-                    alert('Failed to download file');
+                    showToast('Failed to download file', 'error');
                 }
             }
             
@@ -1278,7 +1402,7 @@ def documents_management():
                 });
                 
                 if (response.ok) {
-                    alert('Document deleted successfully');
+                    showToast('Document deleted successfully', 'success');
                     loadStats();
                     loadDocuments();
                 } else {
@@ -1683,11 +1807,33 @@ def onboarding_management():
     <html>
     <head>
         <title>Docent - Onboarding Management</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -2426,11 +2572,33 @@ def cases_management():
     <html>
     <head>
         <title>Docent - Case Studies</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -2561,6 +2729,38 @@ def cases_management():
                 color: #666;
             }
             .empty-state h3 { margin-bottom: 10px; color: #2c3e50; }
+            
+            /* Toast notifications */
+            .toast-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+            }
+            .toast {
+                background: #333;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .toast.success { background: #27ae60; }
+            .toast.error { background: #e74c3c; }
+            .toast.warning { background: #f39c12; }
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+
         </style>
     </head>
     <body>
@@ -2574,11 +2774,11 @@ def cases_management():
             <div class="stats">
                 <div class="stat-card">
                     <h3>Total Cases</h3>
-                    <div class="value" id="statTotal">-</div>
+                    <div class="value" id="statTotal"><span class="loading-text">...</span></div>
                 </div>
                 <div class="stat-card">
                     <h3>This Month</h3>
-                    <div class="value" id="statMonth">-</div>
+                    <div class="value" id="statMonth"><span class="loading-text">...</span></div>
                 </div>
             </div>
             
@@ -2798,7 +2998,7 @@ def cases_management():
                     });
                     
                     if (response.ok) {
-                        alert('Case study created successfully!');
+                        showToast('Case study created!', 'success');
                         closeCreateModal();
                         loadCases();
                         loadStats();
@@ -2918,10 +3118,10 @@ def cases_management():
                     });
                     
                     if (response.ok) {
-                        alert('Summary generated!');
+                        showToast('Summary generated!', 'success');
                         viewCase(currentViewingCase.id);
                     } else {
-                        alert('Failed to generate summary');
+                        showToast('Failed to generate summary', 'error');
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
@@ -2939,11 +3139,11 @@ def cases_management():
                     });
                     
                     if (response.ok) {
-                        alert('Case deleted');
+                        showToast('Case deleted', 'success');
                         loadCases();
                         loadStats();
                     } else {
-                        alert('Failed to delete case');
+                        showToast('Failed to delete case', 'error');
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
@@ -2969,11 +3169,33 @@ def analytics_dashboard():
     <html>
     <head>
         <title>Docent - Analytics</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -3152,22 +3374,22 @@ def analytics_dashboard():
             <div class="stats-row">
                 <div class="stat-card">
                     <h3>🔍 Total Searches</h3>
-                    <div class="value" id="totalSearches">-</div>
+                    <div class="value" id="totalSearches"><span class="loading-text">...</span></div>
                     <div class="sub" id="searchesToday">- today</div>
                 </div>
                 <div class="stat-card blue">
                     <h3>📄 Documents</h3>
-                    <div class="value" id="totalDocs">-</div>
+                    <div class="value" id="totalDocs"><span class="loading-text">...</span></div>
                     <div class="sub" id="processedDocs">- processed</div>
                 </div>
                 <div class="stat-card green">
                     <h3>👥 Users</h3>
-                    <div class="value" id="totalUsers">-</div>
+                    <div class="value" id="totalUsers"><span class="loading-text">...</span></div>
                     <div class="sub" id="activeUsers">- active this week</div>
                 </div>
                 <div class="stat-card orange">
                     <h3>📋 Case Studies</h3>
-                    <div class="value" id="totalCases">-</div>
+                    <div class="value" id="totalCases"><span class="loading-text">...</span></div>
                     <div class="sub">knowledge captured</div>
                 </div>
             </div>
@@ -3387,11 +3609,33 @@ def settings_page():
     <html>
     <head>
         <title>Docent - Settings</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
                 background: #f5f7fa;
+            }
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                .header { padding: 15px 20px !important; flex-direction: column; gap: 10px; }
+                .header h1 { font-size: 20px !important; }
+                .container { padding: 0 15px !important; margin: 20px auto !important; }
+                .stats { grid-template-columns: repeat(2, 1fr) !important; }
+                .stat-card { padding: 15px !important; }
+                .stat-card .value { font-size: 24px !important; }
+                .quick-actions { grid-template-columns: repeat(2, 1fr) !important; }
+                .action-btn { padding: 15px 10px !important; font-size: 12px !important; }
+                table { font-size: 12px; }
+                th, td { padding: 8px !important; }
+                .btn { padding: 8px 12px !important; font-size: 12px !important; }
+                .modal-content { width: 95% !important; padding: 20px !important; }
+                .search-box { width: 100% !important; }
+                .grid-2 { grid-template-columns: 1fr !important; }
+            }
+            @media (max-width: 480px) {
+                .stats { grid-template-columns: 1fr !important; }
+                .quick-actions { grid-template-columns: 1fr !important; }
             }
             .header {
                 background: white;
@@ -3671,9 +3915,9 @@ def settings_page():
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.ok) {
-                        alert('Test email sent! Check your inbox.');
+                        showToast('Test email sent!', 'success');
                     } else {
-                        alert('Failed to send test email');
+                        showToast('Failed to send test email', 'error');
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
@@ -3689,9 +3933,9 @@ def settings_page():
                     });
                     if (response.ok) {
                         const data = await response.json();
-                        alert('Weekly digest sent! Stats: ' + JSON.stringify(data.stats));
+                        showToast('Weekly digest sent!', 'success');
                     } else {
-                        alert('Failed to send digest');
+                        showToast('Failed to send digest', 'error');
                     }
                 } catch (error) {
                     alert('Error: ' + error.message);
