@@ -106,5 +106,12 @@ docker-compose up -d
 - [ ] Production Hardening
 - [ ] Final Polish
 
+
+
+## Documentation
+- [API Reference](docs/API_REFERENCE.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+- [Changelog](docs/CHANGELOG.md)
+
 ## License
 MIT
