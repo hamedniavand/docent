@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from typing import Optional
 from app.core.database import get_db
 from app.core.security import get_password_hash, create_access_token
-from app.models.models import User, Company, Role
+from app.models.models import User, Company, Role, ActivityLog
 from app.schemas.users import (
     UserCreate, UserUpdate, UserInvite, UserResponse, 
     UserListResponse, RoleResponse
@@ -323,6 +323,16 @@ async def invite_user(
         )
     except Exception as e:
         print(f"Failed to send invite email: {e}")
+    
+    # Log activity
+    activity = ActivityLog(
+        user_id=current_user.id,
+        company_id=company_id,
+        action="User Invited",
+        details={"invited_email": invite_data.email, "invited_name": invite_data.name}
+    )
+    db.add(activity)
+    db.commit()
     
     return {"message": "Invitation sent successfully", "user_id": new_user.id}
     

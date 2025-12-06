@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.api.deps.auth import require_active_user
 from app.schemas.search import SearchRequest, SearchResponse, SearchResult
 from app.services.search import get_search_service
-from app.models.models import User, SystemAdmin
+from app.models.models import ActivityLog, User, SystemAdmin
 import logging
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ def get_search_history(
     current_user = Depends(require_active_user)
 ):
     """Get user's search history"""
-    from app.models.models import SearchHistory
+    from app.models.models import ActivityLog, SearchHistory
     
     if isinstance(current_user, SystemAdmin):
         raise HTTPException(status_code=400, detail="Not available for system admins")
@@ -99,7 +99,7 @@ def get_available_filters(
     current_user = Depends(require_active_user)
 ):
     """Get available filter options for current company"""
-    from app.models.models import Document
+    from app.models.models import ActivityLog, Document
     from sqlalchemy import func
     
     if isinstance(current_user, SystemAdmin):

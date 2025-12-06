@@ -6,7 +6,7 @@ from sqlalchemy import func, or_
 from typing import Optional, List
 from app.core.database import get_db
 from app.core.config import settings
-from app.models.models import Document, User
+from app.models.models import Document, User, ActivityLog
 from app.schemas.documents import DocumentResponse, DocumentListResponse, DocumentStats
 from app.api.deps.auth import require_active_user
 from app.utils.storage import get_file_storage, validate_file_type, format_file_size
@@ -68,6 +68,16 @@ async def upload_document(
     # Get uploader name
     uploader = db.query(User).filter(User.id == document.uploaded_by).first()
     uploader_name = uploader.name if uploader else "Unknown"
+    
+    # Log activity
+    activity = ActivityLog(
+        user_id=current_user.id,
+        company_id=current_user.company_id,
+        action="Document Uploaded",
+        details={"filename": document.filename, "document_id": document.id, "size": storage_info["file_size"]}
+    )
+    db.add(activity)
+    db.commit()
     
     # Auto-process document in background
     def process_task(doc_id=document.id):

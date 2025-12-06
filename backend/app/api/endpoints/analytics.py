@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.models.models import (
+    SystemAdmin,
     ActivityLog, User, Document, DocumentChunk, 
     SearchHistory, CaseInstance, Role
 )
@@ -273,6 +274,16 @@ def get_analytics_summary(
     current_user = Depends(require_active_user)
 ):
     """Get quick analytics summary for dashboard"""
+    # Handle SystemAdmin (no company_id)
+    if isinstance(current_user, SystemAdmin):
+        return AnalyticsSummary(
+            total_searches=0,
+            total_documents=0,
+            total_users=0,
+            total_cases=0,
+            activity_count_today=0
+        )
+    
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     
     total_searches = db.query(SearchHistory).filter(

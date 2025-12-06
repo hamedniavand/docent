@@ -5,7 +5,7 @@ from datetime import datetime
 from app.core.database import get_db
 from app.api.deps.auth import require_active_user
 from app.models.models import (
-    OnboardingPath, User, SystemAdmin, 
+    ActivityLog, OnboardingPath, User, SystemAdmin, 
     UserOnboardingProgress, Company
 )
 from app.schemas.onboarding import (

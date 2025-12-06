@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
-from datetime import timedelta
+from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.core.security import verify_password, create_access_token
 from app.core.config import settings
-from app.models.models import SystemAdmin, User
+from app.models.models import SystemAdmin, User, ActivityLog
 from app.schemas.auth import LoginRequest, LoginResponse, SystemAdminResponse, UserResponse
 from app.api.deps.auth import get_current_user, require_active_user
 from typing import Union
@@ -67,6 +67,19 @@ def login(
                 "company_id": user.company_id
             }
         )
+        
+        # Update last login
+        user.last_login = datetime.utcnow()
+        
+        # Log activity
+        activity = ActivityLog(
+            user_id=user.id,
+            company_id=user.company_id,
+            action="User Login",
+            details={"email": user.email}
+        )
+        db.add(activity)
+        db.commit()
         
         return LoginResponse(
             access_token=access_token,

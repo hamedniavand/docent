@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import datetime, timedelta
 
 from app.core.database import get_db
-from app.models.models import CaseTemplate, CaseInstance, User, Document
+from app.models.models import CaseTemplate, CaseInstance, User, Document, ActivityLog
 from app.schemas.cases import (
     CaseTemplateCreate, CaseTemplateResponse,
     CaseInstanceCreate, CaseInstanceUpdate, CaseInstanceResponse,
@@ -122,6 +122,16 @@ def create_case(
     db.add(case)
     db.commit()
     db.refresh(case)
+    
+    # Log activity
+    activity = ActivityLog(
+        user_id=current_user.id,
+        company_id=current_user.company_id,
+        action="Case Study Created",
+        details={"case_id": case.id, "title": data.title, "template_id": data.template_id}
+    )
+    db.add(activity)
+    db.commit()
     
     # Get creator name
     creator = db.query(User).filter(User.id == case.created_by).first()
