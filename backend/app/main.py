@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.endpoints import auth, pages, users, documents, processing, search, onboarding
+from app.api.endpoints import auth, pages, users, documents, processing, cases, search, onboarding
 
 import logging
 
@@ -35,6 +35,7 @@ app.include_router(pages.router)
 app.include_router(users.router)
 app.include_router(documents.router)
 app.include_router(processing.router)
+app.include_router(cases.router)
 app.include_router(search.router)
 app.include_router(onboarding.router)
 

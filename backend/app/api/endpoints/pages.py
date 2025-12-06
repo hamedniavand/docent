@@ -321,6 +321,7 @@ def dashboard():
                     <a href="/search-page" class="action-btn">🔍 Advanced Search</a>
                     <a href="/users-management" class="action-btn">👥 Manage Users</a>
                     <a href="/onboarding-management" class="action-btn">📚 Onboarding</a>
+                    <a href="/cases-management" class="action-btn">📋 Case Studies</a>
                     <a href="/docs" class="action-btn" target="_blank">📚 API Docs</a>
                 </div>
             </div>
@@ -2404,6 +2405,549 @@ def onboarding_view(path_id: int):
             }
             
             loadPath();
+        </script>
+    </body>
+    </html>
+    """
+
+
+@router.get("/cases-management", response_class=HTMLResponse)
+def cases_management():
+    """Case Studies Management Page"""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - Case Studies</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 1200px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .card {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                text-decoration: none;
+                display: inline-block;
+            }
+            .btn-primary { background: #667eea; color: white; }
+            .btn-primary:hover { background: #5568d3; }
+            .btn-secondary { background: #e0e0e0; color: #333; }
+            .btn-success { background: #27ae60; color: white; }
+            .btn-danger { background: #e74c3c; color: white; }
+            .stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .stat-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+            }
+            .stat-card h3 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+            .stat-card .value { font-size: 32px; font-weight: bold; }
+            .templates-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .template-card {
+                background: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 20px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .template-card:hover {
+                border-color: #667eea;
+                transform: translateY(-2px);
+            }
+            .template-card.selected {
+                border-color: #667eea;
+                background: #f0f0ff;
+            }
+            .template-card h4 { color: #2c3e50; margin-bottom: 10px; }
+            .template-card .sections { font-size: 12px; color: #666; }
+            .template-card .badge {
+                display: inline-block;
+                padding: 2px 8px;
+                background: #667eea;
+                color: white;
+                border-radius: 10px;
+                font-size: 11px;
+                margin-top: 10px;
+            }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: #f8f9fa; font-weight: 600; color: #2c3e50; }
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5);
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+            .modal-content {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 700px;
+                width: 90%;
+                max-height: 85vh;
+                overflow-y: auto;
+            }
+            .form-group { margin-bottom: 20px; }
+            .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+            .form-group input, .form-group textarea, .form-group select {
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #e0e0e0;
+                border-radius: 6px;
+                font-size: 14px;
+            }
+            .form-group textarea { min-height: 100px; resize: vertical; }
+            .section-input { margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+            .section-input h5 { color: #667eea; margin-bottom: 10px; }
+            .search-box {
+                padding: 10px;
+                border: 2px solid #e0e0e0;
+                border-radius: 6px;
+                width: 300px;
+            }
+            .empty-state {
+                text-align: center;
+                padding: 60px;
+                color: #666;
+            }
+            .empty-state h3 { margin-bottom: 10px; color: #2c3e50; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📋 Case Studies</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">← Back to Dashboard</button>
+        </div>
+        
+        <div class="container">
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Cases</h3>
+                    <div class="value" id="statTotal">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>This Month</h3>
+                    <div class="value" id="statMonth">-</div>
+                </div>
+            </div>
+            
+            <!-- Templates Section -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📝 Create New Case</h2>
+                </div>
+                <p style="color: #666; margin-bottom: 20px;">Select a template to start a new case study:</p>
+                <div class="templates-grid" id="templatesGrid">
+                    <div style="text-align: center; padding: 20px; color: #666;">Loading templates...</div>
+                </div>
+                <button class="btn btn-primary" id="createCaseBtn" style="display: none;" onclick="showCreateModal()">
+                    Create Case Study →
+                </button>
+            </div>
+            
+            <!-- Cases List -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📚 Your Case Studies</h2>
+                    <input type="text" id="searchBox" class="search-box" placeholder="Search cases...">
+                </div>
+                <div id="casesContainer">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Template</th>
+                                <th>Created By</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="casesTableBody">
+                            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Create Case Modal -->
+        <div id="createModal" class="modal">
+            <div class="modal-content">
+                <h3 style="margin-bottom: 20px;">📋 New Case Study</h3>
+                <form id="createCaseForm">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="caseTitle" required placeholder="e.g., Q4 Product Launch Review">
+                    </div>
+                    <div id="sectionsContainer"></div>
+                    <div class="form-group">
+                        <label>Link Documents (Optional)</label>
+                        <select id="linkedDocs" multiple style="height: 100px;">
+                        </select>
+                        <small style="color: #666;">Hold Ctrl/Cmd to select multiple</small>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Case</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- View Case Modal -->
+        <div id="viewModal" class="modal">
+            <div class="modal-content">
+                <div id="viewCaseContent"></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button class="btn btn-success" onclick="generateSummary()">Generate AI Summary</button>
+                    <button class="btn btn-secondary" onclick="closeViewModal()">Close</button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            const token = localStorage.getItem('access_token');
+            let templates = [];
+            let selectedTemplate = null;
+            let currentViewingCase = null;
+            let documents = [];
+            
+            if (!token) {
+                window.location.href = '/auth/login-page';
+            }
+            
+            // Load stats
+            async function loadStats() {
+                try {
+                    const response = await fetch('/cases/stats', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const stats = await response.json();
+                        document.getElementById('statTotal').textContent = stats.total_cases;
+                        document.getElementById('statMonth').textContent = stats.cases_this_month;
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                }
+            }
+            
+            // Load templates
+            async function loadTemplates() {
+                try {
+                    const response = await fetch('/cases/templates', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        templates = await response.json();
+                        renderTemplates();
+                    }
+                } catch (error) {
+                    console.error('Error loading templates:', error);
+                }
+            }
+            
+            function renderTemplates() {
+                const grid = document.getElementById('templatesGrid');
+                if (templates.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><h3>No templates available</h3></div>';
+                    return;
+                }
+                
+                grid.innerHTML = templates.map(t => {
+                    const sections = t.template_json.sections || [];
+                    return `
+                        <div class="template-card ${selectedTemplate?.id === t.id ? 'selected' : ''}" 
+                             onclick="selectTemplate(${t.id})">
+                            <h4>${t.name}</h4>
+                            <div class="sections">${sections.length} sections: ${sections.slice(0,3).join(', ')}${sections.length > 3 ? '...' : ''}</div>
+                            ${t.is_default ? '<span class="badge">Default</span>' : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            function selectTemplate(templateId) {
+                selectedTemplate = templates.find(t => t.id === templateId);
+                renderTemplates();
+                document.getElementById('createCaseBtn').style.display = 'inline-block';
+            }
+            
+            // Load documents for linking
+            async function loadDocuments() {
+                try {
+                    const response = await fetch('/documents/?page_size=100', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        documents = data.documents.filter(d => d.status === 'processed');
+                        
+                        const select = document.getElementById('linkedDocs');
+                        select.innerHTML = documents.map(d => 
+                            `<option value="${d.id}">${d.filename}</option>`
+                        ).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading documents:', error);
+                }
+            }
+            
+            // Show create modal
+            function showCreateModal() {
+                if (!selectedTemplate) {
+                    alert('Please select a template first');
+                    return;
+                }
+                
+                const sections = selectedTemplate.template_json.sections || [];
+                const container = document.getElementById('sectionsContainer');
+                container.innerHTML = sections.map((s, i) => `
+                    <div class="section-input">
+                        <h5>${s}</h5>
+                        <textarea id="section_${i}" placeholder="Enter content for ${s}..." required></textarea>
+                    </div>
+                `).join('');
+                
+                document.getElementById('createModal').style.display = 'flex';
+            }
+            
+            function closeCreateModal() {
+                document.getElementById('createModal').style.display = 'none';
+                document.getElementById('createCaseForm').reset();
+            }
+            
+            // Create case
+            document.getElementById('createCaseForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const title = document.getElementById('caseTitle').value;
+                const sections = selectedTemplate.template_json.sections || [];
+                const sectionsData = sections.map((s, i) => ({
+                    section_name: s,
+                    content: document.getElementById(`section_${i}`).value
+                }));
+                
+                const linkedDocsSelect = document.getElementById('linkedDocs');
+                const linkedDocs = Array.from(linkedDocsSelect.selectedOptions).map(o => parseInt(o.value));
+                
+                try {
+                    const response = await fetch('/cases/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            template_id: selectedTemplate.id,
+                            title: title,
+                            sections_data: sectionsData,
+                            linked_document_ids: linkedDocs
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        alert('Case study created successfully!');
+                        closeCreateModal();
+                        loadCases();
+                        loadStats();
+                        selectedTemplate = null;
+                        document.getElementById('createCaseBtn').style.display = 'none';
+                        renderTemplates();
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + (error.detail || 'Failed to create case'));
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+            
+            // Load cases
+            async function loadCases(search = '') {
+                try {
+                    const response = await fetch(`/cases/?search=${encodeURIComponent(search)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        renderCases(data.cases);
+                    }
+                } catch (error) {
+                    console.error('Error loading cases:', error);
+                }
+            }
+            
+            function renderCases(cases) {
+                const tbody = document.getElementById('casesTableBody');
+                if (cases.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><h3>No case studies yet</h3><p>Select a template above to create your first case study</p></td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = cases.map(c => {
+                    const date = new Date(c.created_at).toLocaleDateString();
+                    return `
+                        <tr>
+                            <td><strong>${c.title}</strong></td>
+                            <td>${c.template_name}</td>
+                            <td>${c.creator_name}</td>
+                            <td>${date}</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;" 
+                                        onclick="viewCase(${c.id})">View</button>
+                                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" 
+                                        onclick="deleteCase(${c.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            // Search
+            let searchTimeout;
+            document.getElementById('searchBox').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => loadCases(e.target.value), 500);
+            });
+            
+            // View case
+            async function viewCase(caseId) {
+                try {
+                    const response = await fetch(`/cases/${caseId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const caseData = await response.json();
+                        currentViewingCase = caseData;
+                        
+                        const sections = caseData.data_json.sections || {};
+                        let sectionsHtml = '';
+                        for (const [name, content] of Object.entries(sections)) {
+                            sectionsHtml += `
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="color: #667eea; margin-bottom: 8px;">${name}</h4>
+                                    <p style="white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 8px;">${content}</p>
+                                </div>
+                            `;
+                        }
+                        
+                        document.getElementById('viewCaseContent').innerHTML = `
+                            <h2 style="margin-bottom: 10px;">${caseData.title}</h2>
+                            <p style="color: #666; margin-bottom: 20px;">Template: ${caseData.template_name} | By: ${caseData.creator_name} | ${new Date(caseData.created_at).toLocaleDateString()}</p>
+                            ${sectionsHtml}
+                            ${caseData.generated_summary ? `
+                                <div style="margin-top: 20px; padding: 20px; background: #e8f5e9; border-radius: 8px;">
+                                    <h4 style="color: #27ae60; margin-bottom: 10px;">📝 AI Summary</h4>
+                                    <p style="white-space: pre-wrap;">${caseData.generated_summary}</p>
+                                </div>
+                            ` : ''}
+                        `;
+                        
+                        document.getElementById('viewModal').style.display = 'flex';
+                    }
+                } catch (error) {
+                    alert('Error loading case: ' + error.message);
+                }
+            }
+            
+            function closeViewModal() {
+                document.getElementById('viewModal').style.display = 'none';
+                currentViewingCase = null;
+            }
+            
+            // Generate summary
+            async function generateSummary() {
+                if (!currentViewingCase) return;
+                
+                try {
+                    const response = await fetch(`/cases/${currentViewingCase.id}/generate-summary`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        alert('Summary generated!');
+                        viewCase(currentViewingCase.id);
+                    } else {
+                        alert('Failed to generate summary');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+            
+            // Delete case
+            async function deleteCase(caseId) {
+                if (!confirm('Are you sure you want to delete this case study?')) return;
+                
+                try {
+                    const response = await fetch(`/cases/${caseId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        alert('Case deleted');
+                        loadCases();
+                        loadStats();
+                    } else {
+                        alert('Failed to delete case');
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+            
+            // Initialize
+            loadStats();
+            loadTemplates();
+            loadDocuments();
+            loadCases();
         </script>
     </body>
     </html>
