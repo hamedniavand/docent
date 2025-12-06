@@ -322,6 +322,7 @@ def dashboard():
                     <a href="/users-management" class="action-btn">👥 Manage Users</a>
                     <a href="/onboarding-management" class="action-btn">📚 Onboarding</a>
                     <a href="/cases-management" class="action-btn">📋 Case Studies</a>
+                    <a href="/analytics-dashboard" class="action-btn">📊 Analytics</a>
                     <a href="/docs" class="action-btn" target="_blank">📚 API Docs</a>
                 </div>
             </div>
@@ -2948,6 +2949,424 @@ def cases_management():
             loadTemplates();
             loadDocuments();
             loadCases();
+        </script>
+    </body>
+    </html>
+    """
+
+
+@router.get("/analytics-dashboard", response_class=HTMLResponse)
+def analytics_dashboard():
+    """Analytics Dashboard Page"""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Docent - Analytics</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: #f5f7fa;
+            }
+            .header {
+                background: white;
+                padding: 20px 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header h1 { color: #2c3e50; font-size: 24px; }
+            .container {
+                max-width: 1400px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+            .stats-row {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .stat-card {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 25px;
+                border-radius: 12px;
+            }
+            .stat-card.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+            .stat-card.green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+            .stat-card.orange { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+            .stat-card.purple { background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); }
+            .stat-card h3 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+            .stat-card .value { font-size: 36px; font-weight: bold; }
+            .stat-card .sub { font-size: 12px; opacity: 0.8; margin-top: 5px; }
+            .card {
+                background: white;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .card h2 { color: #2c3e50; margin-bottom: 20px; font-size: 18px; }
+            .grid-2 {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                gap: 20px;
+            }
+            .chart-container {
+                height: 250px;
+                display: flex;
+                align-items: flex-end;
+                gap: 8px;
+                padding: 20px 0;
+            }
+            .bar {
+                flex: 1;
+                background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                border-radius: 4px 4px 0 0;
+                min-height: 10px;
+                position: relative;
+                transition: all 0.3s;
+            }
+            .bar:hover { opacity: 0.8; }
+            .bar .tooltip {
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                display: none;
+            }
+            .bar:hover .tooltip { display: block; }
+            .list-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .list-item:last-child { border-bottom: none; }
+            .list-item .query { color: #2c3e50; font-weight: 500; }
+            .list-item .count {
+                background: #667eea;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 12px;
+            }
+            .activity-item {
+                display: flex;
+                gap: 15px;
+                padding: 12px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .activity-item:last-child { border-bottom: none; }
+            .activity-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #f0f0f0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+            }
+            .activity-content { flex: 1; }
+            .activity-content .action { color: #2c3e50; font-weight: 500; }
+            .activity-content .meta { color: #999; font-size: 12px; margin-top: 4px; }
+            .type-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 15px;
+            }
+            .type-item {
+                text-align: center;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 8px;
+            }
+            .type-item .ext { font-size: 24px; font-weight: bold; color: #667eea; }
+            .type-item .count { color: #666; font-size: 14px; }
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .btn-secondary { background: #e0e0e0; color: #333; }
+            .period-selector {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .period-btn {
+                padding: 8px 16px;
+                border: 2px solid #e0e0e0;
+                background: white;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            .period-btn.active {
+                border-color: #667eea;
+                background: #f0f0ff;
+                color: #667eea;
+            }
+            .empty-state {
+                text-align: center;
+                padding: 40px;
+                color: #999;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>📊 Analytics Dashboard</h1>
+            <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">← Back to Dashboard</button>
+        </div>
+        
+        <div class="container">
+            <!-- Period Selector -->
+            <div class="period-selector">
+                <button class="period-btn" onclick="setPeriod(7)">7 Days</button>
+                <button class="period-btn active" onclick="setPeriod(30)">30 Days</button>
+                <button class="period-btn" onclick="setPeriod(90)">90 Days</button>
+            </div>
+            
+            <!-- Summary Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3>🔍 Total Searches</h3>
+                    <div class="value" id="totalSearches">-</div>
+                    <div class="sub" id="searchesToday">- today</div>
+                </div>
+                <div class="stat-card blue">
+                    <h3>📄 Documents</h3>
+                    <div class="value" id="totalDocs">-</div>
+                    <div class="sub" id="processedDocs">- processed</div>
+                </div>
+                <div class="stat-card green">
+                    <h3>👥 Users</h3>
+                    <div class="value" id="totalUsers">-</div>
+                    <div class="sub" id="activeUsers">- active this week</div>
+                </div>
+                <div class="stat-card orange">
+                    <h3>📋 Case Studies</h3>
+                    <div class="value" id="totalCases">-</div>
+                    <div class="sub">knowledge captured</div>
+                </div>
+            </div>
+            
+            <!-- Charts Row -->
+            <div class="grid-2">
+                <!-- Search Trend -->
+                <div class="card">
+                    <h2>📈 Search Activity</h2>
+                    <div class="chart-container" id="searchChart">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+                
+                <!-- Top Queries -->
+                <div class="card">
+                    <h2>🔝 Top Search Queries</h2>
+                    <div id="topQueries">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <!-- Document Types -->
+                <div class="card">
+                    <h2>📁 Documents by Type</h2>
+                    <div class="type-grid" id="docTypes">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+                
+                <!-- Upload Trend -->
+                <div class="card">
+                    <h2>📤 Upload Activity</h2>
+                    <div class="chart-container" id="uploadChart">
+                        <div class="empty-state">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card">
+                <h2>🕐 Recent Activity</h2>
+                <div id="recentActivity">
+                    <div class="empty-state">Loading...</div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            const token = localStorage.getItem('access_token');
+            let currentPeriod = 30;
+            
+            if (!token) {
+                window.location.href = '/auth/login-page';
+            }
+            
+            function setPeriod(days) {
+                currentPeriod = days;
+                document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                loadAnalytics();
+            }
+            
+            async function loadAnalytics() {
+                try {
+                    const response = await fetch(`/analytics/dashboard?days=${currentPeriod}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        renderAnalytics(data);
+                    }
+                } catch (error) {
+                    console.error('Error loading analytics:', error);
+                }
+                
+                // Also load summary for cases
+                try {
+                    const response = await fetch('/analytics/summary', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const summary = await response.json();
+                        document.getElementById('totalCases').textContent = summary.total_cases;
+                    }
+                } catch (error) {
+                    console.error('Error loading summary:', error);
+                }
+            }
+            
+            function renderAnalytics(data) {
+                // Summary stats
+                document.getElementById('totalSearches').textContent = data.search.total_searches;
+                document.getElementById('searchesToday').textContent = data.search.searches_today + ' today';
+                document.getElementById('totalDocs').textContent = data.documents.total_documents;
+                document.getElementById('processedDocs').textContent = data.documents.processed_documents + ' processed';
+                document.getElementById('totalUsers').textContent = data.users.total_users;
+                document.getElementById('activeUsers').textContent = data.users.active_users + ' active this week';
+                
+                // Search chart
+                renderBarChart('searchChart', data.search.searches_by_day, 'count', 'date');
+                
+                // Upload chart
+                renderBarChart('uploadChart', data.documents.uploads_by_day, 'count', 'date');
+                
+                // Top queries
+                renderTopQueries(data.search.top_queries);
+                
+                // Document types
+                renderDocTypes(data.documents.documents_by_type);
+                
+                // Recent activity
+                renderRecentActivity(data.recent_activity);
+            }
+            
+            function renderBarChart(containerId, data, valueKey, labelKey) {
+                const container = document.getElementById(containerId);
+                
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No data for this period</div>';
+                    return;
+                }
+                
+                const maxValue = Math.max(...data.map(d => d[valueKey]));
+                
+                container.innerHTML = data.map(d => {
+                    const height = maxValue > 0 ? (d[valueKey] / maxValue) * 200 : 10;
+                    const label = d[labelKey].split('-').slice(1).join('/');
+                    return `
+                        <div class="bar" style="height: ${height}px;">
+                            <div class="tooltip">${label}: ${d[valueKey]}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            function renderTopQueries(queries) {
+                const container = document.getElementById('topQueries');
+                
+                if (!queries || queries.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No searches yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = queries.map(q => `
+                    <div class="list-item">
+                        <span class="query">"${q.query}"</span>
+                        <span class="count">${q.count} searches</span>
+                    </div>
+                `).join('');
+            }
+            
+            function renderDocTypes(types) {
+                const container = document.getElementById('docTypes');
+                
+                if (!types || Object.keys(types).length === 0) {
+                    container.innerHTML = '<div class="empty-state">No documents yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = Object.entries(types).map(([ext, count]) => `
+                    <div class="type-item">
+                        <div class="ext">${ext}</div>
+                        <div class="count">${count} files</div>
+                    </div>
+                `).join('');
+            }
+            
+            function renderRecentActivity(activities) {
+                const container = document.getElementById('recentActivity');
+                
+                if (!activities || activities.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No recent activity</div>';
+                    return;
+                }
+                
+                const icons = {
+                    'search': '🔍',
+                    'upload': '📤',
+                    'login': '🔐',
+                    'document': '📄',
+                    'case': '📋',
+                    'default': '📌'
+                };
+                
+                container.innerHTML = activities.slice(0, 10).map(a => {
+                    const icon = Object.entries(icons).find(([k]) => a.action.toLowerCase().includes(k))?.[1] || icons.default;
+                    const time = new Date(a.timestamp).toLocaleString();
+                    return `
+                        <div class="activity-item">
+                            <div class="activity-icon">${icon}</div>
+                            <div class="activity-content">
+                                <div class="action">${a.action}</div>
+                                <div class="meta">${a.user_name || 'System'} • ${time}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Initialize
+            loadAnalytics();
         </script>
     </body>
     </html>
